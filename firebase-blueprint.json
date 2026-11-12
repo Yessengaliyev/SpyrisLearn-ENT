@@ -1,0 +1,172 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User's academic profile, role (student or teacher), and UNT progress",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "teacher"] },
+        "level": { "type": "number" },
+        "xp": { "type": "number" },
+        "rank": { "type": "string" },
+        "badges": { "type": "array", "items": { "type": "string" } },
+        "testsCompleted": { "type": "number" },
+        "targetEntScore": { "type": "number" },
+        "currentEntScore": { "type": "number" },
+        "classIds": { "type": "array", "items": { "type": "string" } },
+        "teacherSubject": { "type": "string" },
+        "parentContact": { "type": "string" },
+        "school": { "type": "string" },
+        "grade": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Classroom": {
+      "title": "Classroom",
+      "description": "A study class created by a teacher for UNT preparation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "name": { "type": "string" },
+        "subject": { "type": "string" },
+        "code": { "type": "string" },
+        "studentIds": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "teacherId", "name", "code"]
+    },
+    "ClassAssignment": {
+      "title": "Class Assignment",
+      "description": "An assignment or test dispatched by a teacher to students",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classId": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string", "enum": ["test", "quiz", "flashcards", "task"] },
+        "subject": { "type": "string" },
+        "description": { "type": "string" },
+        "deadline": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "classId", "teacherId", "title", "type"]
+    },
+    "TeacherMessage": {
+      "title": "Teacher Student Message",
+      "description": "Communication and motivation messages between teacher and student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "senderRole": { "type": "string", "enum": ["teacher", "student"] },
+        "receiverId": { "type": "string" },
+        "classId": { "type": "string" },
+        "content": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "type": { "type": "string", "enum": ["message", "parent_alert", "motivation"] }
+      },
+      "required": ["id", "senderId", "receiverId", "content", "timestamp"]
+    },
+    "ChatSession": {
+      "title": "Chat Session",
+      "description": "A conversation session with Spyris",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "title": { "type": "string" },
+        "department": { "type": "string" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "uid", "title", "department"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A single message in a chat session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sessionId": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "assistant"] },
+        "content": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "type": { "type": "string", "enum": ["text", "quiz", "flashcard", "video", "image"] },
+        "metadata": { "type": "object" }
+      },
+      "required": ["id", "sessionId", "role", "content", "timestamp"]
+    },
+    "Project": {
+      "title": "Academic Project",
+      "description": "A project managed by the user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["Planning", "In Progress", "Review", "Completed"] },
+        "tasks": { "type": "array", "items": { "type": "object" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "uid", "title", "status"]
+    },
+    "Mark": {
+      "title": "Academic Mark",
+      "description": "A mark received for a subject",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "subject": { "type": "string" },
+        "value": { "type": "number" },
+        "date": { "type": "string", "format": "date" }
+      },
+      "required": ["id", "uid", "subject", "value", "date"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "User",
+      "description": "User profile documents"
+    },
+    "/classes/{classId}": {
+      "schema": "Classroom",
+      "description": "Classroom documents managed by teachers"
+    },
+    "/assignments/{assignmentId}": {
+      "schema": "ClassAssignment",
+      "description": "Assignments sent by teachers to classes"
+    },
+    "/teacher_messages/{messageId}": {
+      "schema": "TeacherMessage",
+      "description": "Messages between teachers and students"
+    },
+    "/sessions/{sessionId}": {
+      "schema": "ChatSession",
+      "description": "Chat session documents"
+    },
+    "/sessions/{sessionId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Messages within a session"
+    },
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Academic project documents"
+    },
+    "/marks/{markId}": {
+      "schema": "Mark",
+      "description": "Academic mark documents"
+    }
+  }
+}

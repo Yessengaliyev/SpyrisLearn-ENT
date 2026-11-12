@@ -1,0 +1,11 @@
+{
+  "name": "SpyrisLearn",
+  "description": "Персональная система подготовки школьника к ЕНТ с контролем прогресса учителем, аналитикой баллов из 140, планами, квизами и связью с родителями.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
