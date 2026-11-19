@@ -222,7 +222,7 @@ async function startServer() {
       return await ai.models.generateContent(body);
     }
     try {
-      return await withTimeout(ai.models.generateContent(body), 25000);
+      return await withTimeout(ai.models.generateContent(body), 10000);
     } catch (err: any) {
       console.warn("Primary model generateContent failed, falling back to flash-lite:", err?.message);
       const fallbackBody = { 
@@ -288,7 +288,7 @@ async function startServer() {
         responseStream = await ai.models.generateContentStream(body);
       } else {
         try {
-          responseStream = await withTimeout(ai.models.generateContentStream(body), 25000);
+          responseStream = await withTimeout(ai.models.generateContentStream(body), 10000);
         } catch (err: any) {
           console.warn("Primary stream init failed, switching to flash-lite fallback:", err?.message);
           const fallbackBody = {
