@@ -82,12 +82,12 @@ export const ai: any = {
   }
 };
 
-export const spyrisModel = "gemini-3.6-flash";
-export const proModel = "gemini-3.6-flash";
-export const liteModel = "gemini-3.6-flash";
+export const spyrisModel = "gemini-3.1-flash-lite";
+export const proModel = "gemini-3.8-flash";
+export const liteModel = "gemini-3.1-flash-lite";
 export const veoModel = "veo-3.1-lite-generate-preview";
 export const proImageModel = "gemini-3-pro-image";
-export const flashImageModel = "gemini-3.1-flash-image";
+export const flashImageModel = "gemini-3.1-flash-lite-image";
 export const liveModel = "gemini-3.8-live";
 
 export const ttsModel = "gemini-3.8-flash-lite-tts";
@@ -295,7 +295,7 @@ export async function chatWithSpyrisStream(
     }
 
     // Clean up history to keep dialogue context without bloat from past images
-    const MAX_HISTORY_MESSAGES = 16;
+    const MAX_HISTORY_MESSAGES = 8;
     const recentHistory = (history || []).slice(-MAX_HISTORY_MESSAGES);
     const truncatedHistory: any[] = [];
 
@@ -318,47 +318,20 @@ export async function chatWithSpyrisStream(
       tools.push({ googleSearch: {} });
     }
 
-    // Retry logic for transient network errors
-    let lastError;
-    for (let i = 0; i < 3; i++) {
-      try {
-        const response = await ai.models.generateContentStream({
-          model: modelToUse,
-          contents: [
-            ...truncatedHistory,
-            { role: "user", parts }
-          ],
-          config: {
-            systemInstruction,
-            tools: tools.length > 0 ? tools : undefined,
-            thinkingConfig: {
-              thinkingLevel: isThinking ? ThinkingLevel.HIGH : ThinkingLevel.LOW
-            }
-          }
-        });
-        return response;
-      } catch (error: any) {
-        lastError = error;
-        const errorMsg = error.message || String(error);
-        const isRetryable = i < 2 && (
-          errorMsg.includes('status code: 0') ||
-          errorMsg.includes('UNKNOWN') ||
-          errorMsg.includes('500') ||
-          errorMsg.includes('502') ||
-          errorMsg.includes('503') ||
-          errorMsg.includes('Server Error') ||
-          errorMsg.includes('<html>') ||
-          errorMsg.includes('temporarily unavailable')
-        );
-        if (isRetryable) {
-          console.warn(`Gemini API stream attempt ${i + 1} failed (${errorMsg.slice(0, 80)}), retrying...`);
-          await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
-          continue;
+    return await ai.models.generateContentStream({
+      model: modelToUse,
+      contents: [
+        ...truncatedHistory,
+        { role: "user", parts }
+      ],
+      config: {
+        systemInstruction,
+        tools: tools.length > 0 ? tools : undefined,
+        thinkingConfig: {
+          thinkingLevel: isThinking ? ThinkingLevel.HIGH : ThinkingLevel.MINIMAL
         }
-        throw error;
       }
-    }
-    throw lastError;
+    });
   } catch (error) {
     console.error("Error in chatWithSpyrisStream:", error);
     throw error;

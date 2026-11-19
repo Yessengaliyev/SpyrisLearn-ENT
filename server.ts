@@ -202,98 +202,57 @@ async function startServer() {
     httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
   });
 
-  async function executeWithRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
-    let lastError: any;
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        return await fn();
-      } catch (err: any) {
-        lastError = err;
-        const msg = String(err?.message || err?.stack || err || "");
-        const isRetryable = attempt < maxRetries && (
-          msg.includes("500") ||
-          msg.includes("502") ||
-          msg.includes("503") ||
-          msg.includes("504") ||
-          msg.includes("Server Error") ||
-          msg.includes("UNAVAILABLE") ||
-          msg.includes("high demand") ||
-          msg.includes("overloaded") ||
-          msg.includes("<html>") ||
-          msg.includes("fetch failed") ||
-          msg.includes("ECONNRESET")
-        );
-        if (isRetryable) {
-          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
-          continue;
-        }
-        throw err;
-      }
-    }
-    throw lastError;
+  async function executeWithRetry<T>(fn: () => Promise<T>): Promise<T> {
+    return await fn();
+  }
+
+  function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    promise.catch(() => {});
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error("Primary model timeout")), ms);
+    });
+    return Promise.race([promise, timeoutPromise]).finally(() => {
+      clearTimeout(timeoutId);
+    });
   }
 
   async function generateContentWithFallback(body: any) {
-    try {
-      return await executeWithRetry(() => ai.models.generateContent(body));
-    } catch (err: any) {
-      const msg = String(err?.message || err || "");
-      const isQuotaOrServerErr = 
-        msg.includes("429") || 
-        msg.includes("RESOURCE_EXHAUSTED") || 
-        msg.includes("Quota exceeded") || 
-        msg.includes("500") || 
-        msg.includes("Server Error") || 
-        msg.includes("<html>");
-
-      if (isQuotaOrServerErr && body.model !== "gemini-3.1-flash-lite") {
-        const fallbackBody = { ...body, model: "gemini-3.1-flash-lite" };
-        if (fallbackBody.config?.thinkingConfig) {
-          fallbackBody.config = { ...fallbackBody.config, thinkingConfig: { thinkingLevel: 'MINIMAL' } };
-        }
-        return await executeWithRetry(() => ai.models.generateContent(fallbackBody));
-      }
-      throw err;
+    if (body.model === "gemini-3.1-flash-lite") {
+      return await ai.models.generateContent(body);
     }
-  }
-
-  async function generateContentStreamWithFallback(body: any) {
     try {
-      return await executeWithRetry(() => ai.models.generateContentStream(body));
+      return await withTimeout(ai.models.generateContent(body), 25000);
     } catch (err: any) {
-      const msg = String(err?.message || err || "");
-      const isQuotaOrServerErr = 
-        msg.includes("429") || 
-        msg.includes("RESOURCE_EXHAUSTED") || 
-        msg.includes("Quota exceeded") || 
-        msg.includes("500") || 
-        msg.includes("Server Error") || 
-        msg.includes("<html>");
-
-      if (isQuotaOrServerErr && body.model !== "gemini-3.1-flash-lite") {
-        const fallbackBody = { ...body, model: "gemini-3.1-flash-lite" };
-        if (fallbackBody.config?.thinkingConfig) {
-          fallbackBody.config = { ...fallbackBody.config, thinkingConfig: { thinkingLevel: 'MINIMAL' } };
+      console.warn("Primary model generateContent failed, falling back to flash-lite:", err?.message);
+      const fallbackBody = { 
+        ...body, 
+        model: "gemini-3.1-flash-lite",
+        config: {
+          ...body.config,
+          thinkingConfig: { thinkingLevel: 'MINIMAL' }
         }
-        return await executeWithRetry(() => ai.models.generateContentStream(fallbackBody));
-      }
-      throw err;
+      };
+      return await ai.models.generateContent(fallbackBody);
     }
   }
 
   function prepareGeminiBody(rawBody: any) {
     const body = { ...rawBody };
-    if (!body.model) body.model = "gemini-3.8-flash";
+    if (!body.model || body.model.includes("3.6") || body.model === "gemini-flash") {
+      body.model = "gemini-3.1-flash-lite";
+    }
     if (!body.config) body.config = {};
 
-    // gemini-3.8-flash, gemini-4-argon, gemini-4-carbon do NOT support ThinkingLevel.MINIMAL (causes 400 error)
-    const isGemini38Or4 = body.model.includes("3.8") || body.model.includes("4-");
+    const isGemini38Or4 = body.model.includes("3.8") || body.model.includes("4-") || body.model.includes("3-pro");
     if (isGemini38Or4) {
       if (body.config.thinkingConfig?.thinkingLevel === 'MINIMAL') {
         body.config.thinkingConfig = { thinkingLevel: 'LOW' };
       }
-    } else if (!body.config.thinkingConfig && body.model.includes("flash-lite")) {
-      body.config.thinkingConfig = { thinkingLevel: 'MINIMAL' };
+    } else if (body.model.includes("flash-lite")) {
+      if (!body.config.thinkingConfig) {
+        body.config.thinkingConfig = { thinkingLevel: 'MINIMAL' };
+      }
     }
     return body;
   }
@@ -320,26 +279,68 @@ async function startServer() {
   });
 
   app.post("/api/gemini/generateContentStream", async (req, res) => {
+    let headersSet = false;
     try {
       const body = prepareGeminiBody(req.body);
-      const responseStream = await generateContentStreamWithFallback(body);
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
+      
+      let responseStream;
+      if (body.model === "gemini-3.1-flash-lite") {
+        responseStream = await ai.models.generateContentStream(body);
+      } else {
+        try {
+          responseStream = await withTimeout(ai.models.generateContentStream(body), 25000);
+        } catch (err: any) {
+          console.warn("Primary stream init failed, switching to flash-lite fallback:", err?.message);
+          const fallbackBody = {
+            ...body,
+            model: "gemini-3.1-flash-lite",
+            config: {
+              ...body.config,
+              thinkingConfig: { thinkingLevel: 'MINIMAL' }
+            }
+          };
+          responseStream = await ai.models.generateContentStream(fallbackBody);
+        }
+      }
+
       for await (const chunk of responseStream) {
+        if (!headersSet) {
+          res.setHeader('Content-Type', 'text/event-stream');
+          res.setHeader('Cache-Control', 'no-cache, no-transform');
+          res.setHeader('Connection', 'keep-alive');
+          res.setHeader('X-Accel-Buffering', 'no');
+          headersSet = true;
+        }
+
         let chunkText = "";
         try {
           chunkText = chunk.text || "";
         } catch {
           chunkText = chunk.candidates?.[0]?.content?.parts?.map((p: any) => p.text || '')?.join('') || "";
         }
+
         res.write(`data: ${JSON.stringify({ ...chunk, text: chunkText })}\n\n`);
+        if (typeof (res as any).flush === 'function') {
+          (res as any).flush();
+        }
       }
-      res.write('data: [DONE]\n\n');
-      res.end();
+
+      if (headersSet) {
+        res.write('data: [DONE]\n\n');
+        res.end();
+      } else {
+        res.setHeader('Content-Type', 'application/json');
+        res.json({ text: "" });
+      }
     } catch (error: any) {
       console.error("Error in /api/gemini/generateContentStream:", error);
-      res.status(500).json({ error: error.message || "Internal Server Error" });
+      if (!headersSet) {
+        res.status(500).json({ error: error.message || "Internal Server Error" });
+      } else {
+        res.write(`data: ${JSON.stringify({ error: error.message || "Streaming error" })}\n\n`);
+        res.write('data: [DONE]\n\n');
+        res.end();
+      }
     }
   });
 

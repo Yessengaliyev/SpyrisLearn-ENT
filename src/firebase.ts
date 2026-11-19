@@ -83,15 +83,16 @@ testConnection();
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Auth Helpers
 export const loginWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     return result.user;
   } catch (error: any) {
     console.error("Login failed:", error);
-    if (error?.code === 'auth/popup-blocked' || error?.code === 'auth/cancelled-popup-request' || error?.code === 'auth/popup-closed-by-user') {
-      throw new Error("Всплывающее окно входа через Google было заблокировано браузером или отменено. Пожалуйста, используйте вход по Email и Паролю.");
+    if (error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
+      throw new Error("Вход через Google был отменен или окно было закрыто.");
+    } else if (error?.code === 'auth/popup-blocked') {
+      throw new Error("Всплывающее окно входа заблокировано браузером. Разрешите всплывающие окна или используйте Email.");
     }
     throw error;
   }

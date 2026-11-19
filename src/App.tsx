@@ -510,7 +510,8 @@ function AppContent() {
             }
             let profile = await getUserProfile(firebaseUser.uid);
             if (!profile) {
-              profile = await createUserProfile(firebaseUser);
+              const defaultRole = selectedEntryRole || 'student';
+              profile = await createUserProfile(firebaseUser, defaultRole);
             }
             if (profile) {
               setUser(profile as User);
@@ -1093,20 +1094,79 @@ function AppContent() {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const [isGoogleAuthActive, setIsGoogleAuthActive] = useState(false);
+
+  const handleGoogleLogin = async (overrideRole?: 'student' | 'teacher') => {
+    if (isGoogleAuthActive) return;
+    setIsGoogleAuthActive(true);
     try {
       setAuthError('');
-      await loginWithGoogle();
+      signupInProgressRef.current = true;
+      const firebaseUser = await loginWithGoogle();
+      const roleToSet = overrideRole || selectedEntryRole || 'student';
+      let profile = await getUserProfile(firebaseUser.uid) as User | null;
+      if (!profile) {
+        profile = await createUserProfile(firebaseUser, roleToSet) as User;
+      } else if (overrideRole || selectedEntryRole) {
+        const desiredRole = overrideRole || selectedEntryRole;
+        if (desiredRole && profile.role !== desiredRole) {
+          profile = { ...profile, role: desiredRole };
+          await updateUserProfile(firebaseUser.uid, { role: desiredRole });
+        }
+      }
+      if (profile) {
+        setUser(profile as User);
+        setXp(profile.xp || 0);
+        setLevel(profile.level || 1);
+        try {
+          localStorage.setItem('spyris_local_user', JSON.stringify(profile));
+        } catch {}
+      }
+      setSelectedDept('Classroom');
+      setSelectedEntryRole(null);
+      showToast(`Добро пожаловать, ${profile?.name || firebaseUser.displayName || 'Пользователь'}!`, 'success');
     } catch (e: any) {
-      console.error("Google login error:", e);
-      let message = e.message || "Google login failed";
+      console.warn("Google login notification:", e);
+      let message = e.message || "Ошибка входа через Google";
       if (e.code === 'auth/operation-not-allowed') {
-        message = "Вход через Google не включен! Перейдите в Firebase Console -> Authentication -> Sign-in method и включите провайдер 'Google'.";
-      } else if (e.message && e.message.includes('всплывающее окно')) {
-        message = e.message;
+        message = "Вход через Google не включен в консоли Firebase. Используйте Email или Демо-вход.";
+      } else if (e.code === 'auth/cancelled-popup-request' || e.code === 'auth/popup-closed-by-user' || (e.message && e.message.includes('отменен'))) {
+        message = "Вход через Google отменен. Вы можете войти по Email или через Демо-режим.";
       }
       setAuthError(message);
+    } finally {
+      setIsGoogleAuthActive(false);
+      signupInProgressRef.current = false;
     }
+  };
+
+  const handleGuestLogin = (role: 'student' | 'teacher' = 'student') => {
+    setAuthError('');
+    signupInProgressRef.current = true;
+    const uid = `guest_${Date.now()}`;
+    const guestUser: User = {
+      uid,
+      name: role === 'teacher' ? 'Демо Преподаватель ЕНТ' : 'Демо Ученик ЕНТ',
+      email: 'guest@spyris.kz',
+      role,
+      school: role === 'teacher' ? 'Школа ЕНТ' : '11 класс',
+      targetEntScore: 140,
+      currentEntScore: 110,
+      xp: 3000,
+      level: 6,
+      rank: role === 'teacher' ? 'Наставник ЕНТ' : 'Претендент на Грант',
+      badges: ['ENT_PIONEER', 'DEMO_GUEST'],
+      testsCompleted: 5
+    };
+    try {
+      localStorage.setItem(`spyris_local_profile_${uid}`, JSON.stringify(guestUser));
+      localStorage.setItem('spyris_local_user', JSON.stringify(guestUser));
+    } catch {}
+    setUser(guestUser);
+    setSelectedDept('Classroom');
+    setSelectedEntryRole(null);
+    signupInProgressRef.current = false;
+    showToast(`Вход в демо-режим (${role === 'teacher' ? 'Учитель' : 'Ученик'}) выполнен!`, 'success');
   };
 
   const handleTeacherAuthSubmit = async (e: React.FormEvent) => {
@@ -1195,13 +1255,23 @@ function AppContent() {
         return;
       }
       try {
+        signupInProgressRef.current = true;
         const { signInWithEmailAndPassword } = await import('firebase/auth');
         const userCred = await signInWithEmailAndPassword(auth, email, password);
-        const profile = await getUserProfile(userCred.user.uid);
+        let profile = await getUserProfile(userCred.user.uid) as User | null;
+        if (!profile) {
+          profile = await createUserProfile(userCred.user, 'teacher') as User;
+        } else if (profile.role !== 'teacher') {
+          profile = { ...profile, role: 'teacher' };
+          await updateUserProfile(userCred.user.uid, { role: 'teacher' });
+        }
         if (profile) {
           setUser(profile as User);
           setXp(profile.xp || 0);
           setLevel(profile.level || 1);
+          try {
+            localStorage.setItem('spyris_local_user', JSON.stringify(profile));
+          } catch {}
         }
         setSelectedDept('Classroom');
         setSelectedEntryRole(null);
@@ -1243,6 +1313,8 @@ function AppContent() {
         setSelectedDept('Classroom');
         setSelectedEntryRole(null);
         showToast('Вход в кабинет учителя выполнен!', 'success');
+      } finally {
+        signupInProgressRef.current = false;
       }
     }
   };
@@ -1335,13 +1407,20 @@ function AppContent() {
         return;
       }
       try {
+        signupInProgressRef.current = true;
         const { signInWithEmailAndPassword } = await import('firebase/auth');
         const userCred = await signInWithEmailAndPassword(auth, email, password);
-        const profile = await getUserProfile(userCred.user.uid);
+        let profile = await getUserProfile(userCred.user.uid) as User | null;
+        if (!profile) {
+          profile = await createUserProfile(userCred.user, 'student') as User;
+        }
         if (profile) {
           setUser(profile as User);
           setXp(profile.xp || 0);
           setLevel(profile.level || 1);
+          try {
+            localStorage.setItem('spyris_local_user', JSON.stringify(profile));
+          } catch {}
         }
         setSelectedDept('Classroom');
         setSelectedEntryRole(null);
@@ -1416,10 +1495,6 @@ function AppContent() {
       setSelectedDept('Classroom');
     }
     showToast(isTeacher ? `Вход в режиме Учителя: ${teacherSubj}` : 'Вход в режиме Ученика ЕНТ', 'success');
-  };
-
-  const handleGuestLogin = async () => {
-    await handleQuickRoleLogin('student');
   };
 
   const handleToggleUserRole = () => {
@@ -1875,38 +1950,17 @@ ${strictLang}`,
     // Sync to Firestore immediately
     syncSessions(newSessionsRef, targetSessionId);
 
+    let surgeMessageId: string | null = null;
+
     // 2. Call AI
     try {
       const history = (updatedSessionForAI.messages || []).slice(0, -1).map(m => {
-        const parts: any[] = [];
-        if (m.image) {
-          parts.push({
-            inlineData: {
-              data: m.image,
-              mimeType: 'image/jpeg'
-            }
-          });
-        }
-        if (m.attachments && m.attachments.length > 0) {
-          m.attachments.forEach(att => {
-            parts.push({
-              inlineData: {
-                data: att,
-                mimeType: 'image/jpeg'
-              }
-            });
-          });
-        }
-        // Exclude empty text from parts if there's no content
-        if (m.content) {
-          parts.push({ text: m.content });
-        } else if (parts.length === 0) {
-          // Gemini requires at least one part
-          parts.push({ text: "." });
-        }
+        // Strip base64 image payloads from past history turns to prevent massive latency
+        const hasMedia = m.image || (m.attachments && m.attachments.length > 0);
+        const textContent = m.content || (hasMedia ? "[Прикрепленное изображение/файл]" : ".");
         return {
           role: m.role,
-          parts
+          parts: [{ text: textContent }]
         };
       }) || [];
 
@@ -1981,7 +2035,8 @@ ${strictLang}`,
           isStudyMode
         );
         
-        const surgeMessageId = crypto.randomUUID();
+        surgeMessageId = crypto.randomUUID();
+        const activeSurgeId = surgeMessageId;
         let currentContent = "";
         let currentGroundingChunks: any[] = [];
 
@@ -1990,7 +2045,7 @@ ${strictLang}`,
           return prev.map(s => {
             if (s.id === targetSessionId) {
               const surgeMessage: Message = {
-                id: surgeMessageId,
+                id: activeSurgeId,
                 role: 'model',
                 content: '',
                 timestamp: Date.now(),
@@ -2014,7 +2069,7 @@ ${strictLang}`,
           }
           setSessions(prev => prev.map(s => s.id === targetSessionId ? {
             ...s,
-            messages: s.messages.map(m => m.id === surgeMessageId ? { ...m, content: currentContent, groundingChunks: currentGroundingChunks } : m),
+            messages: s.messages.map(m => m.id === activeSurgeId ? { ...m, content: currentContent, groundingChunks: currentGroundingChunks } : m),
             lastUpdated: Date.now()
           } : s));
         }
@@ -2035,7 +2090,7 @@ ${strictLang}`,
       const isQuota = errorMsg.includes("429") || errorMsg.includes("RESOURCE_EXHAUSTED") || errorMsg.includes("Quota");
       
       setSessions(prev => {
-        const errorSessions = prev.map(s => {
+        const errorSessions: ChatSession[] = prev.map(s => {
           if (s.id === targetSessionId) {
             let userNotice = appLanguage === 'ru' 
               ? "Не удалось обработать запрос. Пожалуйста, попробуйте повторить."
@@ -2051,15 +2106,15 @@ ${strictLang}`,
                   : "High load on AI server. Please wait a minute and try again.";
             }
 
-            const errorMessage: Message = {
-              id: crypto.randomUUID(),
-              role: 'model',
-              content: userNotice,
-              timestamp: Date.now(),
-            };
+            const activeSurgeId = surgeMessageId;
+            const hasSurgeMsg = activeSurgeId ? s.messages.some(m => m.id === activeSurgeId) : false;
+            const updatedMessages: Message[] = hasSurgeMsg
+              ? s.messages.map(m => m.id === activeSurgeId ? { ...m, content: m.content ? `${m.content}\n\n[${userNotice}]` : userNotice } : m)
+              : [...s.messages, { id: crypto.randomUUID(), role: 'model' as const, content: userNotice, timestamp: Date.now() }];
+
             return {
               ...s,
-              messages: [...s.messages, errorMessage],
+              messages: updatedMessages,
               lastUpdated: Date.now()
             };
           }
@@ -2168,6 +2223,8 @@ ${strictLang}`,
   const archivedSessions = filteredSessions.filter(s => s.isArchived);
 
   if (!user) {
+    const tAuth = TRANSLATIONS[appLanguage]?.auth || TRANSLATIONS.ru.auth;
+
     return (
       <div className="min-h-screen bg-surge-bg flex items-center justify-center p-4 md:p-8 relative overflow-y-auto">
         <div className="absolute top-1/3 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-surge-purple/15 blur-[130px] rounded-full pointer-events-none" />
@@ -2178,17 +2235,66 @@ ${strictLang}`,
           animate={{ y: 0, opacity: 1 }}
           className="w-full max-w-4xl glass-panel rounded-[2.5rem] p-6 md:p-10 shadow-2xl relative z-10 my-8 border-2 border-surge-ink/10"
         >
+          {/* Top Language Switcher Bar on Login Screen */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6 pb-6 border-b border-surge-ink/10">
+            <div className="flex items-center gap-2 text-xs font-bold text-surge-ink/60">
+              <Globe size={16} className="text-surge-purple" />
+              <span>{tAuth.langLabel}:</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-surge-ink/5 p-1 rounded-2xl border border-surge-ink/10">
+              <button 
+                type="button"
+                onClick={() => setAppLanguage('ru')}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5",
+                  appLanguage === 'ru' 
+                    ? "bg-surge-purple text-white shadow-md shadow-surge-purple/20" 
+                    : "text-surge-ink/60 hover:text-surge-ink hover:bg-surge-ink/10"
+                )}
+              >
+                <span>🇷🇺</span>
+                <span>Русский</span>
+              </button>
+              <button 
+                type="button"
+                onClick={() => setAppLanguage('kk')}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5",
+                  appLanguage === 'kk' 
+                    ? "bg-surge-purple text-white shadow-md shadow-surge-purple/20" 
+                    : "text-surge-ink/60 hover:text-surge-ink hover:bg-surge-ink/10"
+                )}
+              >
+                <span>🇰🇿</span>
+                <span>Қазақша</span>
+              </button>
+              <button 
+                type="button"
+                onClick={() => setAppLanguage('en')}
+                className={cn(
+                  "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5",
+                  appLanguage === 'en' 
+                    ? "bg-surge-purple text-white shadow-md shadow-surge-purple/20" 
+                    : "text-surge-ink/60 hover:text-surge-ink hover:bg-surge-ink/10"
+                )}
+              >
+                <span>🇬🇧</span>
+                <span>English</span>
+              </button>
+            </div>
+          </div>
+
           {/* Header */}
           <div className="text-center max-w-2xl mx-auto mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 font-bold text-xs uppercase tracking-widest mb-4">
               <GraduationCap size={16} />
-              <span>ЕНТ 2026 • Единое Национальное Тестирование</span>
+              <span>{tAuth.loginHeaderTag}</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-display font-black text-surge-ink tracking-tight mb-3">
               Spyris<span className="text-surge-purple">Learn</span>
             </h1>
             <p className="text-surge-ink/60 text-sm md:text-base font-medium">
-              Персональная система подготовки школьника к ЕНТ с контролем прогресса учителем
+              {tAuth.loginSubHeader}
             </p>
           </div>
 
@@ -2202,11 +2308,11 @@ ${strictLang}`,
                   onClick={() => { setSelectedEntryRole(null); setAuthError(''); }}
                   className="px-4 py-2 rounded-xl bg-surge-ink/5 hover:bg-surge-ink/10 text-surge-ink text-xs font-bold transition-all flex items-center gap-2"
                 >
-                  ← Назад к выбору роли
+                  {tAuth.backToRoleSelect}
                 </button>
                 <div className="flex items-center gap-2 text-teal-400 font-bold text-xs uppercase tracking-wider">
                   <Users size={16} />
-                  <span>Кабинет Преподавателя ЕНТ</span>
+                  <span>{tAuth.teacherPortalTitle}</span>
                 </div>
               </div>
 
@@ -2222,7 +2328,7 @@ ${strictLang}`,
                       : "text-surge-ink/60 hover:text-surge-ink"
                   )}
                 >
-                  1. Регистрация нового учителя
+                  {tAuth.tabTeacherRegister}
                 </button>
                 <button
                   type="button"
@@ -2234,7 +2340,7 @@ ${strictLang}`,
                       : "text-surge-ink/60 hover:text-surge-ink"
                   )}
                 >
-                  2. Войти в существующий аккаунт
+                  {tAuth.tabTeacherLogin}
                 </button>
               </div>
 
@@ -2244,7 +2350,7 @@ ${strictLang}`,
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[11px] font-bold text-surge-ink/60 uppercase tracking-wider mb-1.5">
-                          ФИО Преподавателя *
+                          {tAuth.teacherNameLabel}
                         </label>
                         <input
                           type="text"
@@ -2252,12 +2358,12 @@ ${strictLang}`,
                           value={teacherRegForm.name}
                           onChange={e => setTeacherRegForm({ ...teacherRegForm, name: e.target.value })}
                           className="w-full bg-surge-bg border border-surge-border rounded-xl px-4 py-3 text-surge-ink text-sm font-bold focus:outline-none focus:ring-2 focus:ring-teal-500/30"
-                          placeholder="Например: Ибрагимов Руслан Маратович"
+                          placeholder={tAuth.teacherNamePlaceholder}
                         />
                       </div>
                       <div>
                         <label className="block text-[11px] font-bold text-surge-ink/60 uppercase tracking-wider mb-1.5">
-                          Предметный профиль *
+                          {tAuth.subjectLabel}
                         </label>
                         <select
                           value={teacherRegForm.subject}
@@ -2286,7 +2392,7 @@ ${strictLang}`,
 
                     <div>
                       <label className="block text-[11px] font-bold text-surge-ink/60 uppercase tracking-wider mb-1.5">
-                        Адрес школы / Учебного заведения *
+                        {tAuth.schoolNameLabel}
                       </label>
                       <input
                         type="text"
@@ -2294,7 +2400,7 @@ ${strictLang}`,
                         value={teacherRegForm.schoolAddress}
                         onChange={e => setTeacherRegForm({ ...teacherRegForm, schoolAddress: e.target.value })}
                         className="w-full bg-surge-bg border border-surge-border rounded-xl px-4 py-3 text-surge-ink text-sm font-bold focus:outline-none focus:ring-2 focus:ring-teal-500/30"
-                        placeholder="Например: г. Алматы, пр. Абая 52, Лицей №134"
+                        placeholder={tAuth.schoolNamePlaceholder}
                       />
                     </div>
                   </>
@@ -2303,7 +2409,7 @@ ${strictLang}`,
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[11px] font-bold text-surge-ink/60 uppercase tracking-wider mb-1.5">
-                      Email (Логин) *
+                      {tAuth.emailLabel}
                     </label>
                     <input
                       type="email"
@@ -2316,7 +2422,7 @@ ${strictLang}`,
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold text-surge-ink/60 uppercase tracking-wider mb-1.5">
-                      Пароль *
+                      {tAuth.passwordLabel}
                     </label>
                     <input
                       type="password"
@@ -2325,7 +2431,7 @@ ${strictLang}`,
                       value={teacherRegForm.password}
                       onChange={e => setTeacherRegForm({ ...teacherRegForm, password: e.target.value })}
                       className="w-full bg-surge-bg border border-surge-border rounded-xl px-4 py-3 text-surge-ink text-sm font-bold focus:outline-none focus:ring-2 focus:ring-teal-500/30"
-                      placeholder="Минимум 6 символов"
+                      placeholder={tAuth.passwordPlaceholder}
                     />
                   </div>
                 </div>
@@ -2343,10 +2449,29 @@ ${strictLang}`,
                 >
                   <Users size={18} />
                   <span>
-                    {entryMode === 'signup' ? 'Зарегистрироваться и открыть кабинет учителя' : 'Войти в кабинет учителя'}
+                    {entryMode === 'signup' ? tAuth.btnRegisterTeacher : tAuth.btnLoginTeacher}
                   </span>
                 </button>
               </form>
+
+              <div className="relative my-5">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-surge-ink/10"></div></div>
+                <div className="relative flex justify-center text-xs uppercase"><span className="bg-surge-card px-3 text-surge-ink/50 font-bold">{tAuth.orGoogleLogin}</span></div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleGoogleLogin('teacher')}
+                className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 font-bold py-3.5 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-3 text-sm active:scale-95"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span>{tAuth.googleTeacherBtn}</span>
+              </button>
             </div>
           ) : selectedEntryRole === 'student' ? (
             /* STUDENT REGISTRATION & LOGIN FORM */
@@ -2357,11 +2482,11 @@ ${strictLang}`,
                   onClick={() => { setSelectedEntryRole(null); setAuthError(''); }}
                   className="px-4 py-2 rounded-xl bg-surge-ink/5 hover:bg-surge-ink/10 text-surge-ink text-xs font-bold transition-all flex items-center gap-2"
                 >
-                  ← Назад к выбору роли
+                  {tAuth.backToRoleSelect}
                 </button>
                 <div className="flex items-center gap-2 text-surge-purple font-bold text-xs uppercase tracking-wider">
                   <GraduationCap size={16} />
-                  <span>Портал Ученика ЕНТ 2026</span>
+                  <span>{tAuth.studentPortalTitle}</span>
                 </div>
               </div>
 
@@ -2377,7 +2502,7 @@ ${strictLang}`,
                       : "text-surge-ink/60 hover:text-surge-ink"
                   )}
                 >
-                  1. Регистрация ученика
+                  {tAuth.tabStudentRegister}
                 </button>
                 <button
                   type="button"
@@ -2389,7 +2514,7 @@ ${strictLang}`,
                       : "text-surge-ink/60 hover:text-surge-ink"
                   )}
                 >
-                  2. Войти в существующий аккаунт
+                  {tAuth.tabStudentLogin}
                 </button>
               </div>
 
@@ -2399,7 +2524,7 @@ ${strictLang}`,
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[11px] font-bold text-surge-ink/60 uppercase tracking-wider mb-1.5">
-                          ФИО Ученика *
+                          {tAuth.fullNameLabel}
                         </label>
                         <input
                           type="text"
@@ -2407,12 +2532,12 @@ ${strictLang}`,
                           value={studentRegForm.name}
                           onChange={e => setStudentRegForm({ ...studentRegForm, name: e.target.value })}
                           className="w-full bg-surge-bg border border-surge-border rounded-xl px-4 py-3 text-surge-ink text-sm font-bold focus:outline-none focus:ring-2 focus:ring-surge-purple/30"
-                          placeholder="Например: Касымов Арман"
+                          placeholder={tAuth.fullNamePlaceholder}
                         />
                       </div>
                       <div>
                         <label className="block text-[11px] font-bold text-surge-ink/60 uppercase tracking-wider mb-1.5">
-                          Профильные предметы ЕНТ *
+                          {tAuth.profileSubjectsLabel}
                         </label>
                         <select
                           value={studentRegForm.profileSubjects}
@@ -2438,7 +2563,7 @@ ${strictLang}`,
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-[11px] font-bold text-surge-ink/60 uppercase tracking-wider mb-1.5">
-                          Класс / Статус
+                          {tAuth.schoolGradeLabel}
                         </label>
                         <select
                           value={studentRegForm.schoolGrade}
@@ -2452,7 +2577,7 @@ ${strictLang}`,
                       </div>
                       <div>
                         <label className="block text-[11px] font-bold text-surge-ink/60 uppercase tracking-wider mb-1.5">
-                          Целевой балл (из 140)
+                          {tAuth.targetScoreLabel}
                         </label>
                         <input
                           type="number"
@@ -2465,7 +2590,7 @@ ${strictLang}`,
                       </div>
                       <div>
                         <label className="block text-[11px] font-bold text-surge-ink/60 uppercase tracking-wider mb-1.5">
-                          Телефон родителей
+                          {tAuth.parentContactLabel}
                         </label>
                         <input
                           type="text"
@@ -2482,7 +2607,7 @@ ${strictLang}`,
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[11px] font-bold text-surge-ink/60 uppercase tracking-wider mb-1.5">
-                      Email (Логин) *
+                      {tAuth.emailLabel}
                     </label>
                     <input
                       type="email"
@@ -2495,7 +2620,7 @@ ${strictLang}`,
                   </div>
                   <div>
                     <label className="block text-[11px] font-bold text-surge-ink/60 uppercase tracking-wider mb-1.5">
-                      Пароль *
+                      {tAuth.passwordLabel}
                     </label>
                     <input
                       type="password"
@@ -2504,7 +2629,7 @@ ${strictLang}`,
                       value={studentRegForm.password}
                       onChange={e => setStudentRegForm({ ...studentRegForm, password: e.target.value })}
                       className="w-full bg-surge-bg border border-surge-border rounded-xl px-4 py-3 text-surge-ink text-sm font-bold focus:outline-none focus:ring-2 focus:ring-surge-purple/30"
-                      placeholder="Минимум 6 символов"
+                      placeholder={tAuth.passwordPlaceholder}
                     />
                   </div>
                 </div>
@@ -2522,219 +2647,206 @@ ${strictLang}`,
                 >
                   <Zap size={18} />
                   <span>
-                    {entryMode === 'signup' ? 'Зарегистрироваться и начать подготовку к ЕНТ' : 'Войти в аккаунт ученика'}
+                    {entryMode === 'signup' ? tAuth.btnRegisterStudent : tAuth.btnLoginStudent}
                   </span>
                 </button>
               </form>
+
+              <div className="relative my-5">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-surge-ink/10"></div></div>
+                <div className="relative flex justify-center text-xs uppercase"><span className="bg-surge-card px-3 text-surge-ink/50 font-bold">{tAuth.orGoogleLogin}</span></div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleGoogleLogin('student')}
+                className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 font-bold py-3.5 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-3 text-sm active:scale-95"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span>{tAuth.googleStudentBtn}</span>
+              </button>
             </div>
           ) : (
             /* TWO PRIMARY DOORS: STUDENT & TEACHER */
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {/* Door 1: Student */}
-              <div className="bg-surge-card rounded-3xl p-6 md:p-7 border-2 border-surge-purple/30 shadow-xl flex flex-col justify-between hover:border-surge-purple transition-all relative overflow-hidden group">
-                <div className="absolute -right-6 -bottom-6 text-surge-purple/5 pointer-events-none">
-                  <GraduationCap size={140} />
-                </div>
-                <div className="space-y-4 relative z-10">
-                  <div className="w-14 h-14 rounded-2xl bg-surge-purple/15 text-surge-purple flex items-center justify-center font-black text-2xl">
-                    🎓
+            <div className="space-y-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Door 1: Student */}
+                <div className="bg-surge-card rounded-3xl p-6 md:p-7 border-2 border-surge-purple/30 shadow-xl flex flex-col justify-between hover:border-surge-purple transition-all relative overflow-hidden group">
+                  <div className="absolute -right-6 -bottom-6 text-surge-purple/5 pointer-events-none">
+                    <GraduationCap size={140} />
                   </div>
-                  <div>
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-surge-purple">Режим Ученика</span>
-                    <h3 className="text-2xl font-bold text-surge-ink mt-0.5">Зайти как ученик</h3>
-                    <p className="text-xs text-surge-ink/60 mt-2 leading-relaxed">
-                      Готовьтесь к ЕНТ, решайте пробные тесты, сдавайте задания от вашего учителя, копите баллы из 140 и выполняйте квесты на Грант.
-                    </p>
+                  <div className="space-y-4 relative z-10">
+                    <div className="w-14 h-14 rounded-2xl bg-surge-purple/15 text-surge-purple flex items-center justify-center font-black text-2xl">
+                      🎓
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-surge-purple">{tAuth.studentMode}</span>
+                      <h3 className="text-2xl font-bold text-surge-ink mt-0.5">{tAuth.studentDoorTitle}</h3>
+                      <p className="text-xs text-surge-ink/60 mt-2 leading-relaxed">
+                        {tAuth.studentDesc}
+                      </p>
+                    </div>
+                    <ul className="space-y-1.5 text-xs text-surge-ink/70 font-medium pt-2">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-surge-purple shrink-0" />
+                        <span>{tAuth.studentFeature1}</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-surge-purple shrink-0" />
+                        <span>{tAuth.studentFeature2}</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-surge-purple shrink-0" />
+                        <span>{tAuth.studentFeature3}</span>
+                      </li>
+                    </ul>
                   </div>
-                  <ul className="space-y-1.5 text-xs text-surge-ink/70 font-medium pt-2">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-surge-purple shrink-0" />
-                      <span>Связь с учителем и задания класса</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-surge-purple shrink-0" />
-                      <span>Аналитика баллов ЕНТ (до 140)</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-surge-purple shrink-0" />
-                      <span>ЕНТ Квесты, XP и достижения</span>
-                    </li>
-                  </ul>
+
+                  <div className="pt-6 relative z-10 space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedEntryRole('student');
+                        setEntryMode('signup');
+                        setAuthError('');
+                      }}
+                      className="w-full bg-surge-purple hover:bg-surge-purple-dark text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-surge-purple/25 transition-all active:scale-95 flex items-center justify-center gap-2 text-sm"
+                    >
+                      <Zap size={16} />
+                      <span>{tAuth.registerStudent}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedEntryRole('student');
+                        setEntryMode('login');
+                        setAuthError('');
+                      }}
+                      className="w-full py-2.5 rounded-xl text-xs font-bold text-surge-ink/60 hover:text-surge-purple transition-all"
+                    >
+                      {tAuth.hasStudentAcc}
+                    </button>
+                  </div>
                 </div>
 
-                <div className="pt-6 relative z-10 space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedEntryRole('student');
-                      setEntryMode('signup');
-                      setAuthError('');
-                    }}
-                    className="w-full bg-surge-purple hover:bg-surge-purple-dark text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-surge-purple/25 transition-all active:scale-95 flex items-center justify-center gap-2 text-sm"
-                  >
-                    <Zap size={16} />
-                    <span>Зарегистрироваться как Ученик</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedEntryRole('student');
-                      setEntryMode('login');
-                      setAuthError('');
-                    }}
-                    className="w-full py-2.5 rounded-xl text-xs font-bold text-surge-ink/60 hover:text-surge-purple transition-all"
-                  >
-                    Уже есть аккаунт ученика? Войти
-                  </button>
+                {/* Door 2: Teacher */}
+                <div className="bg-surge-card rounded-3xl p-6 md:p-7 border-2 border-teal-500/30 shadow-xl flex flex-col justify-between hover:border-teal-500 transition-all relative overflow-hidden group">
+                  <div className="absolute -right-6 -bottom-6 text-teal-500/5 pointer-events-none">
+                    <Users size={140} />
+                  </div>
+                  <div className="space-y-4 relative z-10">
+                    <div className="w-14 h-14 rounded-2xl bg-teal-500/15 text-teal-400 flex items-center justify-center font-black text-2xl">
+                      👨‍🏫
+                    </div>
+                    <div>
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-teal-400">{tAuth.teacherMode}</span>
+                      <h3 className="text-2xl font-bold text-surge-ink mt-0.5">{tAuth.teacherDoorTitle}</h3>
+                      <p className="text-xs text-surge-ink/60 mt-2 leading-relaxed">
+                        {tAuth.teacherDesc}
+                      </p>
+                    </div>
+                    <ul className="space-y-1.5 text-xs text-surge-ink/70 font-medium pt-2">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-teal-400 shrink-0" />
+                        <span>{tAuth.teacherFeature1}</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-teal-400 shrink-0" />
+                        <span>{tAuth.teacherFeature2}</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-teal-400 shrink-0" />
+                        <span>{tAuth.teacherFeature3}</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="pt-6 relative z-10 space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedEntryRole('teacher');
+                        setEntryMode('signup');
+                        setAuthError('');
+                      }}
+                      className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-teal-500/25 transition-all active:scale-95 flex items-center justify-center gap-2 text-sm"
+                    >
+                      <Users size={16} />
+                      <span>{tAuth.registerTeacher}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedEntryRole('teacher');
+                        setEntryMode('login');
+                        setAuthError('');
+                      }}
+                      className="w-full py-2.5 rounded-xl text-xs font-bold text-surge-ink/60 hover:text-teal-400 transition-all"
+                    >
+                      {tAuth.hasTeacherAcc}
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Door 2: Teacher */}
-              <div className="bg-surge-card rounded-3xl p-6 md:p-7 border-2 border-teal-500/30 shadow-xl flex flex-col justify-between hover:border-teal-500 transition-all relative overflow-hidden group">
-                <div className="absolute -right-6 -bottom-6 text-teal-500/5 pointer-events-none">
-                  <Users size={140} />
+              {/* Quick Google & Demo Login Options */}
+              <div className="pt-5 border-t border-surge-ink/10 flex flex-col md:flex-row items-center justify-between gap-4 bg-surge-ink/5 p-4 rounded-3xl">
+                <div className="flex items-center gap-2 text-xs font-bold text-surge-ink/70">
+                  <Globe size={16} className="text-surge-purple shrink-0" />
+                  <span>{tAuth.quickGoogleTitle}</span>
                 </div>
-                <div className="space-y-4 relative z-10">
-                  <div className="w-14 h-14 rounded-2xl bg-teal-500/15 text-teal-400 flex items-center justify-center font-black text-2xl">
-                    👨‍🏫
-                  </div>
-                  <div>
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-teal-400">Режим Преподавателя</span>
-                    <h3 className="text-2xl font-bold text-surge-ink mt-0.5">Зайти как учитель</h3>
-                    <p className="text-xs text-surge-ink/60 mt-2 leading-relaxed">
-                      Создавайте классы («10 А»), контролируйте успеваемость учеников, формируйте тесты с ИИ, мотивируйте отстающих и уведомляйте родителей.
-                    </p>
-                  </div>
-                  <ul className="space-y-1.5 text-xs text-surge-ink/70 font-medium pt-2">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-teal-400 shrink-0" />
-                      <span>Создание классов и код приглашения</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-teal-400 shrink-0" />
-                      <span>Контроль баллов и статуса учеников</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-teal-400 shrink-0" />
-                      <span>Конструктор тестов, планов и связь с родителями</span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="pt-6 relative z-10 space-y-2">
+                <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedEntryRole('teacher');
-                      setEntryMode('signup');
-                      setAuthError('');
-                    }}
-                    className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-teal-500/25 transition-all active:scale-95 flex items-center justify-center gap-2 text-sm"
+                    onClick={() => handleGoogleLogin('student')}
+                    className="flex-1 sm:flex-initial bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 font-bold px-3.5 py-2 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-1.5 text-xs active:scale-95"
                   >
-                    <Users size={16} />
-                    <span>Зарегистрироваться как Учитель</span>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span>{tAuth.googleStudentShort}</span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedEntryRole('teacher');
-                      setEntryMode('login');
-                      setAuthError('');
-                    }}
-                    className="w-full py-2.5 rounded-xl text-xs font-bold text-surge-ink/60 hover:text-teal-400 transition-all"
+                    onClick={() => handleGoogleLogin('teacher')}
+                    className="flex-1 sm:flex-initial bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 font-bold px-3.5 py-2 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-1.5 text-xs active:scale-95"
                   >
-                    Уже есть аккаунт учителя? Войти
+                    <svg className="w-4 h-4" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span>{tAuth.googleTeacherShort}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleGuestLogin('student')}
+                    className="flex-1 sm:flex-initial bg-surge-purple/10 hover:bg-surge-purple/20 text-surge-purple border border-surge-purple/20 font-bold px-3.5 py-2 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-1.5 text-xs active:scale-95"
+                  >
+                    <Zap size={14} />
+                    <span>Демо-Ученик</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleGuestLogin('teacher')}
+                    className="flex-1 sm:flex-initial bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/20 font-bold px-3.5 py-2 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-1.5 text-xs active:scale-95"
+                  >
+                    <Users size={14} />
+                    <span>Демо-Учитель</span>
                   </button>
                 </div>
               </div>
             </div>
           )}
-
-          {/* Standard Email / Password Form & Google */}
-          <div className="border-t border-surge-ink/10 pt-6 max-w-lg mx-auto">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-bold text-surge-ink/40 uppercase tracking-widest">
-                Или вход через аккаунт
-              </span>
-              <button 
-                onClick={() => {
-                  setAuthMode(authMode === 'login' ? 'signup' : 'login');
-                  setAuthError('');
-                }}
-                className="text-surge-purple hover:underline text-xs font-bold"
-              >
-                {authMode === 'login' ? 'Создать новый аккаунт' : 'Уже есть аккаунт? Войти'}
-              </button>
-            </div>
-
-            <form onSubmit={handleAuth} className="space-y-4">
-              {authMode === 'signup' && (
-                <div>
-                  <label className="block text-[11px] font-bold text-surge-ink/50 uppercase tracking-wider mb-1">Имя и фамилия</label>
-                  <input 
-                    type="text" 
-                    value={authForm.name}
-                    onChange={e => setAuthForm({...authForm, name: e.target.value})}
-                    className="w-full bg-surge-bg border border-surge-border rounded-xl px-4 py-3 text-surge-ink text-sm font-bold focus:outline-none focus:ring-2 focus:ring-surge-purple/30"
-                    placeholder="Например: Адиль Касымов"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-[11px] font-bold text-surge-ink/50 uppercase tracking-wider mb-1">Email</label>
-                <input 
-                  type="email" 
-                  required
-                  value={authForm.email}
-                  onChange={e => setAuthForm({...authForm, email: e.target.value})}
-                  className="w-full bg-surge-bg border border-surge-border rounded-xl px-4 py-3 text-surge-ink text-sm focus:outline-none focus:ring-2 focus:ring-surge-purple/30"
-                  placeholder="name@example.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-surge-ink/50 uppercase tracking-wider mb-1">Пароль</label>
-                <input 
-                  type="password" 
-                  required
-                  value={authForm.password}
-                  onChange={e => setAuthForm({...authForm, password: e.target.value})}
-                  className="w-full bg-surge-bg border border-surge-border rounded-xl px-4 py-3 text-surge-ink text-sm focus:outline-none focus:ring-2 focus:ring-surge-purple/30"
-                  placeholder="••••••••"
-                />
-              </div>
-
-              {authError && (
-                <div className="flex items-center gap-2 text-rose-500 text-xs font-bold bg-rose-500/10 p-3 rounded-xl border border-rose-500/20">
-                  <AlertCircle size={14} />
-                  <span>{authError}</span>
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-2">
-                <button 
-                  type="submit"
-                  className="flex-1 bg-surge-ink/10 hover:bg-surge-ink/20 text-surge-ink font-bold py-3 rounded-xl transition-all text-xs"
-                >
-                  {authMode === 'login' ? 'Войти по почте' : 'Зарегистрироваться'}
-                </button>
-                <button 
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  className="flex-1 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 font-bold py-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 text-xs"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  <span>Google</span>
-                </button>
-              </div>
-            </form>
-          </div>
         </motion.div>
       </div>
     );
