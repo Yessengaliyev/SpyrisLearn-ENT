@@ -69,6 +69,8 @@ interface ClassroomPortalProps {
   showToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
   onNavigateToDept?: (deptId: any, initialPrompt?: string) => void;
   appLanguage: 'ru' | 'kk' | 'en';
+  isSidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 export const SUBJECT_PRESETS: Record<string, {
@@ -409,9 +411,16 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
   onAddXp,
   showToast,
   onNavigateToDept,
-  appLanguage
+  appLanguage,
+  isSidebarOpen,
+  onToggleSidebar
 }) => {
   const isTeacher = user.role === 'teacher';
+  const closeMobileSidebarIfOpen = () => {
+    if (isSidebarOpen && onToggleSidebar && typeof window !== 'undefined' && window.innerWidth < 768) {
+      onToggleSidebar();
+    }
+  };
   const initialTeacherSubject = user.teacherSubject || 'Химия';
   const initialPreset = SUBJECT_PRESETS[initialTeacherSubject] || SUBJECT_PRESETS['Химия'];
 
@@ -1502,7 +1511,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
   return (
     <div className="w-full max-w-6xl mx-auto space-y-8 pb-12">
       {/* Top Banner: UNT Focus & Classroom Identity */}
-      <div className="relative overflow-hidden rounded-[2.5rem] p-8 md:p-10 border-2 border-teal-500/30 bg-surge-card shadow-2xl">
+      <div className="relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 border-2 border-teal-500/30 bg-surge-card shadow-2xl">
         <div className="absolute -right-10 -top-10 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -left-10 -bottom-10 w-60 h-60 bg-surge-purple/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -1512,7 +1521,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
               <GraduationCap size={16} />
               <span>{isTeacher ? '👨‍🏫 Кабинет Преподавателя ЕНТ' : '🎓 Персональная подготовка к ЕНТ 2026'}</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-display font-black text-surge-ink tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-display font-black text-surge-ink tracking-tight">
               {isTeacher ? 'Управление классами и Мониторинг ЕНТ' : 'Мой класс, Задания и Контроль учителем'}
             </h2>
             <p className="text-surge-ink/60 text-sm max-w-2xl font-medium leading-relaxed">
@@ -1564,7 +1573,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
               {classes.map(c => (
                 <button
                   key={c.id}
-                  onClick={() => setSelectedClassId(c.id)}
+                  onClick={() => { setSelectedClassId(c.id); closeMobileSidebarIfOpen(); }}
                   className={cn(
                     "px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2",
                     selectedClassId === c.id
@@ -1580,7 +1589,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
             </div>
 
             {selectedClass && (
-              <div className="flex items-center gap-2 bg-teal-500/10 border border-teal-500/30 px-4 py-2 rounded-xl">
+              <div className="flex flex-wrap items-center gap-2 bg-teal-500/10 border border-teal-500/30 px-4 py-2 rounded-xl">
                 <span className="text-xs text-surge-ink/60 font-medium">Код для учеников:</span>
                 <span className="font-mono font-black text-teal-400 tracking-wider text-sm">{selectedClass.code}</span>
                 <button 
@@ -1597,13 +1606,13 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
       </div>
 
       {/* Sub-navigation Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
         {isTeacher ? (
           <>
             <button
-              onClick={() => setTeacherTab('students')}
+              onClick={() => { setTeacherTab('students'); closeMobileSidebarIfOpen(); }}
               className={cn(
-                "px-5 py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
+                "px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
                 teacherTab === 'students' ? "bg-teal-500 text-white shadow-lg shadow-teal-500/25" : "bg-surge-card text-surge-ink/70 hover:bg-surge-ink/5 border border-surge-ink/10"
               )}
             >
@@ -1611,9 +1620,9 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
               <span>Журнал учеников ({studentsInClass.length})</span>
             </button>
             <button
-              onClick={() => setTeacherTab('plans')}
+              onClick={() => { setTeacherTab('plans'); closeMobileSidebarIfOpen(); }}
               className={cn(
-                "px-5 py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
+                "px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
                 teacherTab === 'plans' ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25" : "bg-surge-card text-surge-ink/70 hover:bg-surge-ink/5 border border-surge-ink/10"
               )}
             >
@@ -1621,9 +1630,9 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
               <span>Планы обучения ЕНТ</span>
             </button>
             <button
-              onClick={() => setTeacherTab('flashcards')}
+              onClick={() => { setTeacherTab('flashcards'); closeMobileSidebarIfOpen(); }}
               className={cn(
-                "px-5 py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
+                "px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
                 teacherTab === 'flashcards' ? "bg-blue-500 text-white shadow-lg shadow-blue-500/25" : "bg-surge-card text-surge-ink/70 hover:bg-surge-ink/5 border border-surge-ink/10"
               )}
             >
@@ -1631,9 +1640,9 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
               <span>Создание флеш-карт</span>
             </button>
             <button
-              onClick={() => setTeacherTab('quizzes')}
+              onClick={() => { setTeacherTab('quizzes'); closeMobileSidebarIfOpen(); }}
               className={cn(
-                "px-5 py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
+                "px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
                 teacherTab === 'quizzes' ? "bg-pink-500 text-white shadow-lg shadow-pink-500/25" : "bg-surge-card text-surge-ink/70 hover:bg-surge-ink/5 border border-surge-ink/10"
               )}
             >
@@ -1641,9 +1650,9 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
               <span>Создание квизов</span>
             </button>
             <button
-              onClick={() => setTeacherTab('tests')}
+              onClick={() => { setTeacherTab('tests'); closeMobileSidebarIfOpen(); }}
               className={cn(
-                "px-5 py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
+                "px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
                 teacherTab === 'tests' ? "bg-rose-500 text-white shadow-lg shadow-rose-500/25" : "bg-surge-card text-surge-ink/70 hover:bg-surge-ink/5 border border-surge-ink/10"
               )}
             >
@@ -1651,9 +1660,9 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
               <span>Пробные тесты ЕНТ</span>
             </button>
             <button
-              onClick={() => setTeacherTab('communications')}
+              onClick={() => { setTeacherTab('communications'); closeMobileSidebarIfOpen(); }}
               className={cn(
-                "px-5 py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
+                "px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
                 teacherTab === 'communications' ? "bg-surge-purple text-white shadow-lg shadow-surge-purple/25" : "bg-surge-card text-surge-ink/70 hover:bg-surge-ink/5 border border-surge-ink/10"
               )}
             >
@@ -1664,9 +1673,9 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
         ) : (
           <>
             <button
-              onClick={() => setStudentTab('overview')}
+              onClick={() => { setStudentTab('overview'); closeMobileSidebarIfOpen(); }}
               className={cn(
-                "px-5 py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
+                "px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
                 studentTab === 'overview' ? "bg-teal-500 text-white shadow-lg shadow-teal-500/25" : "bg-surge-card text-surge-ink/70 hover:bg-surge-ink/5 border border-surge-ink/10"
               )}
             >
@@ -1674,9 +1683,9 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
               <span>Мой класс & Прогресс ЕНТ</span>
             </button>
             <button
-              onClick={() => setStudentTab('assignments')}
+              onClick={() => { setStudentTab('assignments'); closeMobileSidebarIfOpen(); }}
               className={cn(
-                "px-5 py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
+                "px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
                 studentTab === 'assignments' ? "bg-surge-purple text-white shadow-lg shadow-surge-purple/25" : "bg-surge-card text-surge-ink/70 hover:bg-surge-ink/5 border border-surge-ink/10"
               )}
             >
@@ -1684,9 +1693,9 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
               <span>Задания от учителя ({assignments.length})</span>
             </button>
             <button
-              onClick={() => setStudentTab('quests')}
+              onClick={() => { setStudentTab('quests'); closeMobileSidebarIfOpen(); }}
               className={cn(
-                "px-5 py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
+                "px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
                 studentTab === 'quests' ? "bg-yellow-500 text-white shadow-lg shadow-yellow-500/25" : "bg-surge-card text-surge-ink/70 hover:bg-surge-ink/5 border border-surge-ink/10"
               )}
             >
@@ -1694,9 +1703,9 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
               <span>ЕНТ Квесты и Награды ({quests.filter(q => q.completed).length}/{quests.length})</span>
             </button>
             <button
-              onClick={() => setStudentTab('communications')}
+              onClick={() => { setStudentTab('communications'); closeMobileSidebarIfOpen(); }}
               className={cn(
-                "px-5 py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
+                "px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap",
                 studentTab === 'communications' ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/25" : "bg-surge-card text-surge-ink/70 hover:bg-surge-ink/5 border border-surge-ink/10"
               )}
             >
@@ -1712,19 +1721,19 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
         /* ================= TEACHER DASHBOARD ================= */
         <div className="space-y-8">
           {classes.length === 0 ? (
-            <div className="bg-surge-card rounded-[2.5rem] p-10 md:p-14 border-2 border-dashed border-teal-500/40 text-center space-y-6">
+            <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-6 sm:p-10 md:p-14 border-2 border-dashed border-teal-500/40 text-center space-y-6">
               <div className="w-20 h-20 rounded-3xl bg-teal-500/10 text-teal-400 flex items-center justify-center mx-auto text-4xl">
                 👨‍🏫
               </div>
               <div className="max-w-lg mx-auto space-y-2">
-                <h3 className="text-2xl font-bold text-surge-ink">Добро пожаловать в Кабинет Учителя ЕНТ!</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-surge-ink">Добро пожаловать в Кабинет Учителя ЕНТ!</h3>
                 <p className="text-xs text-surge-ink/60 leading-relaxed">
                   У вас пока нет созданных классов. Создайте класс (например: <strong>«10 А — Химия»</strong> или <strong>«11 Б — ФизМат»</strong>), чтобы получить уникальный код для подключения ваших реальных учеников и отправки им заданий.
                 </p>
               </div>
               <button
                 onClick={() => setIsCreateClassModalOpen(true)}
-                className="px-8 py-4 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-2xl shadow-xl shadow-teal-500/25 transition-all text-sm inline-flex items-center gap-2 active:scale-95"
+                className="px-6 py-3.5 sm:px-8 sm:py-4 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-2xl shadow-xl shadow-teal-500/25 transition-all text-sm inline-flex items-center gap-2 active:scale-95"
               >
                 <Plus size={18} />
                 <span>+ Создать первый класс</span>
@@ -1733,11 +1742,11 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
           ) : teacherTab === 'students' && (
             <>
               {/* Section 1: Students Progress Table & Attention Radar */}
-              <div className="bg-surge-card rounded-[2.5rem] p-8 md:p-10 border-2 border-surge-ink/10 shadow-xl space-y-6">
+              <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 border-2 border-surge-ink/10 shadow-xl space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h3 className="text-2xl font-display font-bold text-surge-ink flex items-center gap-2">
-                  <Users className="text-teal-400" size={24} />
+                <h3 className="text-xl md:text-2xl font-display font-bold text-surge-ink flex items-center gap-2">
+                  <Users className="text-teal-400 shrink-0" size={24} />
                   <span>Успеваемость учеников класса {selectedClass ? `«${selectedClass.name}»` : ''}</span>
                 </h3>
                 <p className="text-surge-ink/50 text-xs font-medium mt-1">
@@ -1763,13 +1772,13 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
             </div>
 
             {studentsInClass.length === 0 ? (
-              <div className="p-10 rounded-2xl bg-surge-ink/5 border border-dashed border-surge-ink/20 text-center space-y-4">
+              <div className="p-6 sm:p-10 rounded-2xl bg-surge-ink/5 border border-dashed border-surge-ink/20 text-center space-y-4">
                 <Users size={48} className="mx-auto text-surge-ink/30" />
                 <h4 className="font-bold text-surge-ink text-base">В этом классе пока нет учеников</h4>
                 <p className="text-xs text-surge-ink/50 max-w-md mx-auto">
                   Отправьте ученикам код приглашения <strong className="text-teal-400 font-mono text-sm">{selectedClass?.code || 'ENT-XXXX'}</strong>, или добавьте ваших реальных учеников вручную.
                 </p>
-                <div className="flex justify-center gap-3 pt-2">
+                <div className="flex flex-wrap justify-center gap-3 pt-2">
                   <button
                     onClick={() => setIsAddStudentModalOpen(true)}
                     className="px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl text-xs transition-all inline-flex items-center gap-2 shadow-md shadow-teal-500/20"
@@ -1893,11 +1902,11 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
           </div>
 
           {/* Section 2: Dispatched Assignments */}
-          <div className="bg-surge-card rounded-[2.5rem] p-8 md:p-10 border-2 border-surge-ink/10 shadow-xl space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 border-2 border-surge-ink/10 shadow-xl space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h3 className="text-2xl font-display font-bold text-surge-ink flex items-center gap-2">
-                  <FileText className="text-teal-400" size={24} />
+                <h3 className="text-xl md:text-2xl font-display font-bold text-surge-ink flex items-center gap-2">
+                  <FileText className="text-teal-400 shrink-0" size={24} />
                   <span>Задания и Проверочные срезы класса</span>
                 </h3>
                 <p className="text-surge-ink/50 text-xs font-medium mt-1">
@@ -1951,13 +1960,13 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
 
           {/* TEACHER TAB: PLANS */}
           {teacherTab === 'plans' && (
-            <div className="bg-surge-card rounded-[2.5rem] p-8 md:p-10 border-2 border-emerald-500/20 shadow-xl space-y-6">
+            <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 border-2 border-emerald-500/20 shadow-xl space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-bold text-xs uppercase mb-2">
                     <Calendar size={14} /> Отдел планирования обучения ЕНТ
                   </div>
-                  <h3 className="text-2xl font-bold text-surge-ink">Конструктор планов подготовки к ЕНТ</h3>
+                  <h3 className="text-xl md:text-2xl font-bold text-surge-ink">Конструктор планов подготовки к ЕНТ</h3>
                   <p className="text-xs text-surge-ink/60 mt-1">
                     Сгенерируйте с помощью ИИ или настройте понедельный учебный план с темами, формулами и заданиями для класса {selectedClass?.name}
                   </p>
@@ -2063,18 +2072,18 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
 
           {/* TEACHER TAB: FLASHCARDS */}
           {teacherTab === 'flashcards' && (
-            <div className="bg-surge-card rounded-[2.5rem] p-8 md:p-10 border-2 border-blue-500/20 shadow-xl space-y-6">
+            <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 border-2 border-blue-500/20 shadow-xl space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 text-blue-400 font-bold text-xs uppercase mb-2">
                     <Layers size={14} /> Создание флеш-карточек ЕНТ
                   </div>
-                  <h3 className="text-2xl font-bold text-surge-ink">Генератор формул, дат и терминов</h3>
+                  <h3 className="text-xl md:text-2xl font-bold text-surge-ink">Генератор формул, дат и терминов</h3>
                   <p className="text-xs text-surge-ink/60 mt-1">
                     Создайте набор карточек для быстрого запоминания формул ЕНТ и отправьте ученикам класса
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <button
                     onClick={handleGenerateAiFlashcards}
                     disabled={isGeneratingCards}
@@ -2152,18 +2161,18 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
 
           {/* TEACHER TAB: QUIZZES */}
           {teacherTab === 'quizzes' && (
-            <div className="bg-surge-card rounded-[2.5rem] p-8 md:p-10 border-2 border-pink-500/20 shadow-xl space-y-6">
+            <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 border-2 border-pink-500/20 shadow-xl space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-pink-500/10 text-pink-400 font-bold text-xs uppercase mb-2">
                     <HelpCircle size={14} /> Создание квизов ЕНТ
                   </div>
-                  <h3 className="text-2xl font-bold text-surge-ink">Экспресс-квизы с таймером</h3>
+                  <h3 className="text-xl md:text-2xl font-bold text-surge-ink">Экспресс-квизы с таймером</h3>
                   <p className="text-xs text-surge-ink/60 mt-1">
                     Быстрые срезы знаний перед уроком для выявления отстающих учеников
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <button
                     onClick={handleGenerateAiQuiz}
                     disabled={isGeneratingQuiz}
@@ -2242,18 +2251,18 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
 
           {/* TEACHER TAB: TESTS */}
           {teacherTab === 'tests' && (
-            <div className="bg-surge-card rounded-[2.5rem] p-8 md:p-10 border-2 border-rose-500/20 shadow-xl space-y-6">
+            <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 border-2 border-rose-500/20 shadow-xl space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rose-500/10 text-rose-500 font-bold text-xs uppercase mb-2">
                     <FileText size={14} /> Создание тестов ЕНТ
                   </div>
-                  <h3 className="text-2xl font-bold text-surge-ink">Генератор пробных срезов ЕНТ</h3>
+                  <h3 className="text-xl md:text-2xl font-bold text-surge-ink">Генератор пробных срезов ЕНТ</h3>
                   <p className="text-xs text-surge-ink/60 mt-1">
                     Формируйте экзаменационные задания по формату Национального центра тестирования (НЦТ)
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <button
                     onClick={handleGenerateAiExamTest}
                     disabled={isGeneratingTest}
@@ -2343,18 +2352,18 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
 
           {/* TEACHER TAB: COMMUNICATIONS (CHAT, VOICE, VIDEO) */}
           {teacherTab === 'communications' && (
-            <div className="bg-surge-card rounded-[2.5rem] p-8 md:p-10 border-2 border-surge-purple/20 shadow-xl space-y-6">
+            <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 border-2 border-surge-purple/20 shadow-xl space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-surge-purple/10 text-surge-purple font-bold text-xs uppercase mb-2">
                     <MessageCircle size={14} /> Центр коммуникаций учителя
                   </div>
-                  <h3 className="text-2xl font-bold text-surge-ink">Чат, Голосовые заметки & Видеоразборы</h3>
+                  <h3 className="text-xl md:text-2xl font-bold text-surge-ink">Чат, Голосовые заметки & Видеоразборы</h3>
                   <p className="text-xs text-surge-ink/60 mt-1">
                     Связывайтесь с учениками класса {selectedClass?.name}, мотивируйте отстающих и проводите видеоконсультации
                   </p>
                 </div>
-                <div className="flex items-center gap-2 bg-surge-ink/5 p-1.5 rounded-2xl border border-surge-ink/10">
+                <div className="flex flex-wrap items-center gap-2 bg-surge-ink/5 p-1.5 rounded-2xl border border-surge-ink/10">
                   <button
                     onClick={() => setCommMode('chat')}
                     className={cn(
@@ -2412,13 +2421,13 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
                       onChange={e => setChatInputText(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handleSendChatMessage()}
                       placeholder="Напишите сообщение классу или совет по ЕНТ..."
-                      className="flex-1 bg-surge-bg border border-surge-border rounded-2xl px-5 py-3 text-xs text-surge-ink font-medium focus:outline-none focus:ring-2 focus:ring-surge-purple/30"
+                      className="flex-1 min-w-0 bg-surge-bg border border-surge-border rounded-2xl px-3.5 sm:px-5 py-3 text-xs text-surge-ink font-medium focus:outline-none focus:ring-2 focus:ring-surge-purple/30"
                     />
                     <button
                       onClick={handleSendChatMessage}
-                      className="px-6 py-3 bg-surge-purple hover:bg-surge-purple-dark text-white font-bold rounded-2xl text-xs shadow-lg shadow-surge-purple/20 flex items-center gap-2"
+                      className="px-4 sm:px-6 py-3 bg-surge-purple hover:bg-surge-purple-dark text-white font-bold rounded-2xl text-xs shadow-lg shadow-surge-purple/20 flex items-center gap-1.5 sm:gap-2 shrink-0"
                     >
-                      <Send size={14} /> Отправить
+                      <Send size={14} /> <span className="hidden sm:inline">Отправить</span>
                     </button>
                   </div>
                 </div>
@@ -2426,7 +2435,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
 
               {/* Mode: VOICE CHAT */}
               {commMode === 'voice' && (
-                <div className="p-8 rounded-3xl bg-surge-purple/5 border border-surge-purple/20 text-center space-y-6">
+                <div className="p-5 sm:p-8 rounded-3xl bg-surge-purple/5 border border-surge-purple/20 text-center space-y-6">
                   <div className="w-20 h-20 rounded-full bg-surge-purple/20 text-surge-purple flex items-center justify-center mx-auto text-3xl">
                     <Mic size={36} className={isRecordingVoice ? "animate-pulse text-rose-500" : ""} />
                   </div>
@@ -2578,11 +2587,11 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
               {/* Student Class Info & Enrolled Teacher */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Target UNT Score Card */}
-                <div className="bg-surge-card rounded-[2.5rem] p-8 border-2 border-amber-500/20 shadow-xl space-y-4 relative overflow-hidden">
+                <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 border-2 border-amber-500/20 shadow-xl space-y-4 relative overflow-hidden">
                   <div className="absolute -right-6 -bottom-6 text-amber-500/5 pointer-events-none">
                     <Target size={140} />
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <span className="text-[11px] font-bold uppercase tracking-widest text-amber-500">Текущий балл ЕНТ</span>
                     <button
                       onClick={() => {
@@ -2604,7 +2613,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
                     </button>
                   </div>
                   <div>
-                    <p className="text-4xl font-display font-black text-surge-ink">
+                    <p className="text-3xl sm:text-4xl font-display font-black text-surge-ink">
                       {user.currentEntScore || 108} <span className="text-lg text-surge-ink/40 font-normal">/ 140</span>
                     </p>
                     <p className="text-xs text-surge-ink/50 mt-1">
@@ -2627,11 +2636,11 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
                 </div>
 
                 {/* Teacher Connection Card */}
-                <div className="md:col-span-2 bg-surge-card rounded-[2.5rem] p-8 border-2 border-teal-500/20 shadow-xl space-y-4 flex flex-col justify-between">
-                  <div className="flex items-start justify-between">
+                <div className="md:col-span-2 bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 border-2 border-teal-500/20 shadow-xl space-y-4 flex flex-col justify-between">
+                  <div className="flex items-start justify-between gap-3">
                     <div>
                       <span className="text-[11px] font-bold uppercase tracking-widest text-teal-400">Ваш Преподаватель ЕНТ</span>
-                      <h3 className="text-2xl font-bold text-surge-ink mt-1">
+                      <h3 className="text-xl md:text-2xl font-bold text-surge-ink mt-1">
                         {selectedClass ? selectedClass.teacherName : 'Преподаватель не подключен'}
                       </h3>
                       <p className="text-xs text-surge-ink/50 mt-1">
@@ -2640,7 +2649,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
                           : 'Введите код приглашения выше, чтобы подключиться к реальному классу вашего учителя'}
                       </p>
                     </div>
-                    <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400">
+                    <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 shrink-0">
                       <GraduationCap size={24} />
                     </div>
                   </div>
@@ -2649,7 +2658,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
                     <div className="text-xs text-surge-ink/70">
                       Учитель отслеживает ваши пробные срезы и мотивирует перед ЕНТ.
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => setStudentTab('communications')}
                         className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-600 text-white font-bold text-xs transition-colors flex items-center gap-1.5 shadow-md shadow-teal-500/20"
@@ -2668,7 +2677,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
               </div>
 
               {/* UNT 5 Subjects Breakdown Radar */}
-              <div className="bg-surge-card rounded-[2.5rem] p-8 border-2 border-surge-ink/10 shadow-xl space-y-6">
+              <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 border-2 border-surge-ink/10 shadow-xl space-y-6">
                 <div>
                   <h3 className="text-xl font-bold text-surge-ink flex items-center gap-2">
                     <BarChart3 className="text-teal-400" size={20} />
@@ -2679,7 +2688,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
                   <div className="p-4 rounded-2xl bg-surge-ink/[0.03] border border-surge-ink/10 space-y-2">
                     <span className="text-[10px] font-bold text-teal-400 uppercase">Обязательный</span>
                     <p className="font-bold text-surge-ink text-xs truncate">История Казахстана</p>
@@ -2731,11 +2740,11 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
 
           {/* STUDENT TAB: ASSIGNMENTS */}
           {studentTab === 'assignments' && (
-            <div className="bg-surge-card rounded-[2.5rem] p-8 md:p-10 border-2 border-surge-ink/10 shadow-xl space-y-6">
+            <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 border-2 border-surge-ink/10 shadow-xl space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-2xl font-display font-bold text-surge-ink flex items-center gap-2">
-                    <FileText className="text-teal-400" size={24} />
+                  <h3 className="text-xl md:text-2xl font-display font-bold text-surge-ink flex items-center gap-2">
+                    <FileText className="text-teal-400 shrink-0" size={24} />
                     <span>Задания от учителя к ЕНТ</span>
                   </h3>
                   <p className="text-surge-ink/50 text-xs font-medium mt-1">
@@ -2804,11 +2813,11 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
 
           {/* STUDENT TAB: QUESTS */}
           {studentTab === 'quests' && (
-            <div className="bg-surge-card rounded-[2.5rem] p-8 md:p-10 border-2 border-yellow-500/20 shadow-xl space-y-6">
-              <div className="flex items-center justify-between">
+            <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 border-2 border-yellow-500/20 shadow-xl space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-2xl font-display font-bold text-surge-ink flex items-center gap-2">
-                    <Flame className="text-yellow-500" size={24} />
+                  <h3 className="text-xl md:text-2xl font-display font-bold text-surge-ink flex items-center gap-2">
+                    <Flame className="text-yellow-500 shrink-0" size={24} />
                     <span>ЕНТ Квесты и Достижения</span>
                   </h3>
                   <p className="text-surge-ink/50 text-xs font-medium mt-1">
@@ -2878,7 +2887,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
 
               {/* ACHIEVEMENTS SHOWCASE */}
               <div className="pt-6 border-t border-surge-ink/10 space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h4 className="text-xl font-bold text-surge-ink flex items-center gap-2">
                       <Trophy className="text-amber-500" size={20} />
@@ -2951,11 +2960,11 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
 
           {/* STUDENT TAB: COMMUNICATIONS */}
           {studentTab === 'communications' && (
-            <div className="bg-surge-card rounded-[2.5rem] p-8 md:p-10 border-2 border-indigo-500/20 shadow-xl space-y-6">
+            <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 border-2 border-indigo-500/20 shadow-xl space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-2xl font-bold text-surge-ink flex items-center gap-2">
-                    <MessageSquare className="text-indigo-500" size={24} />
+                  <h3 className="text-xl md:text-2xl font-bold text-surge-ink flex items-center gap-2">
+                    <MessageSquare className="text-indigo-500 shrink-0" size={24} />
                     <span>Связь с преподавателем ЕНТ</span>
                   </h3>
                   <p className="text-xs text-surge-ink/60 mt-1">
@@ -3020,13 +3029,13 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
                   onChange={e => setChatInputText(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSendChatMessage()}
                   placeholder="Напишите вопрос учителю по сложному заданию..."
-                  className="flex-1 bg-surge-bg border border-surge-border rounded-2xl px-5 py-3 text-xs text-surge-ink font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                  className="flex-1 min-w-0 bg-surge-bg border border-surge-border rounded-2xl px-3.5 sm:px-5 py-3 text-xs text-surge-ink font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                 />
                 <button
                   onClick={handleSendChatMessage}
-                  className="px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-2xl text-xs shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+                  className="px-4 sm:px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-2xl text-xs shadow-lg shadow-indigo-500/20 flex items-center gap-1.5 sm:gap-2 shrink-0"
                 >
-                  <Send size={14} /> Отправить
+                  <Send size={14} /> <span className="hidden sm:inline">Отправить</span>
                 </button>
               </div>
             </div>
@@ -3039,12 +3048,12 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
       {/* Modal 1: Create Classroom (Teacher) */}
       <AnimatePresence>
         {isCreateClassModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-lg bg-surge-card border-2 border-teal-500/30 rounded-[2.5rem] p-8 shadow-2xl space-y-6 relative"
+              className="w-full max-w-lg mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto bg-surge-bg/95 backdrop-blur-xl solid-surface border-2 border-teal-500/30 rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 shadow-2xl space-y-6 relative"
             >
               <button 
                 onClick={() => setIsCreateClassModalOpen(false)}
@@ -3123,12 +3132,12 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
       {/* Modal 2: Join Classroom by Code (Student) */}
       <AnimatePresence>
         {isJoinClassModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-md bg-surge-card border-2 border-teal-500/30 rounded-[2.5rem] p-8 shadow-2xl space-y-6 relative"
+              className="w-full max-w-md mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto bg-surge-bg/95 backdrop-blur-xl solid-surface border-2 border-teal-500/30 rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 shadow-2xl space-y-6 relative"
             >
               <button 
                 onClick={() => setIsJoinClassModalOpen(false)}
@@ -3179,12 +3188,12 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
       {/* Modal 3: Create Assignment (Teacher) */}
       <AnimatePresence>
         {isCreateAssignmentModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-xl bg-surge-card border-2 border-teal-500/30 rounded-[2.5rem] p-8 shadow-2xl space-y-6 relative my-8"
+              className="w-full max-w-xl mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto bg-surge-bg/95 backdrop-blur-xl solid-surface border-2 border-teal-500/30 rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 shadow-2xl space-y-6 relative my-4 sm:my-8"
             >
               <button 
                 onClick={() => setIsCreateAssignmentModalOpen(false)}
@@ -3193,7 +3202,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
                 <X size={18} />
               </button>
               <div>
-                <h3 className="text-2xl font-bold text-surge-ink">Дать задание классу</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-surge-ink">Дать задание классу</h3>
                 <p className="text-xs text-surge-ink/50 mt-1">
                   Сформируйте срез знаний ЕНТ вручную или сгенерируйте с помощью ИИ
                 </p>
@@ -3213,7 +3222,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-surge-ink/40 uppercase tracking-widest mb-1.5 ml-1">
                       Формат
@@ -3257,7 +3266,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
                 </div>
 
                 {/* AI Question Generator Button */}
-                <div className="p-4 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-between gap-4">
+                <div className="p-4 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex flex-wrap items-center justify-between gap-4">
                   <div className="text-xs">
                     <p className="font-bold text-teal-400">Генератор вопросов ИИ</p>
                     <p className="text-surge-ink/60">
@@ -3302,12 +3311,12 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
       {/* Modal 4: Direct Message to Student (Teacher) */}
       <AnimatePresence>
         {isMessageStudentModalOpen && activeStudentForModal && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-md bg-surge-card border-2 border-surge-purple/30 rounded-[2.5rem] p-8 shadow-2xl space-y-6 relative"
+              className="w-full max-w-md mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto bg-surge-bg/95 backdrop-blur-xl solid-surface border-2 border-surge-purple/30 rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 shadow-2xl space-y-6 relative"
             >
               <button 
                 onClick={() => setIsMessageStudentModalOpen(false)}
@@ -3357,12 +3366,12 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
       {/* Modal 5: Parent Alert Modal (Teacher) */}
       <AnimatePresence>
         {isParentAlertModalOpen && activeStudentForModal && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-lg bg-surge-card border-2 border-rose-500/30 rounded-[2.5rem] p-8 shadow-2xl space-y-6 relative"
+              className="w-full max-w-lg mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto bg-surge-bg/95 backdrop-blur-xl solid-surface border-2 border-rose-500/30 rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 shadow-2xl space-y-6 relative"
             >
               <button 
                 onClick={() => setIsParentAlertModalOpen(false)}
@@ -3425,12 +3434,12 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
       {/* Modal 6: Interactive Assignment Solver (Student) */}
       <AnimatePresence>
         {activeAssignmentToSolve && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-2xl bg-surge-card border-2 border-teal-500/30 rounded-[2.5rem] p-8 md:p-10 shadow-2xl space-y-6 relative my-8"
+              className="w-full max-w-2xl mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto bg-surge-bg/95 backdrop-blur-xl solid-surface border-2 border-teal-500/30 rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-2xl space-y-6 relative my-4 sm:my-8"
             >
               <button 
                 onClick={() => setActiveAssignmentToSolve(null)}
@@ -3487,7 +3496,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-between gap-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                         <button
                           type="button"
                           onClick={() => {
@@ -3659,12 +3668,12 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
       {/* Modal 7: Add Student Manually (Teacher) */}
       <AnimatePresence>
         {isAddStudentModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-lg bg-surge-card border-2 border-teal-500/30 rounded-[2.5rem] p-8 md:p-10 shadow-2xl space-y-6 relative"
+              className="w-full max-w-lg mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto bg-surge-bg/95 backdrop-blur-xl solid-surface border-2 border-teal-500/30 rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-2xl space-y-6 relative"
             >
               <button
                 onClick={() => setIsAddStudentModalOpen(false)}
@@ -3675,7 +3684,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
 
               <div>
                 <span className="text-xs font-bold text-teal-400 uppercase tracking-widest">Журнал класса</span>
-                <h3 className="text-2xl font-bold text-surge-ink mt-1">Добавить ученика в класс</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-surge-ink mt-1">Добавить ученика в класс</h3>
                 <p className="text-xs text-surge-ink/50 mt-1">
                   Ученик появится в вашем списке контроля успеваемости ЕНТ
                 </p>
@@ -3696,7 +3705,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-surge-ink/40 uppercase tracking-widest mb-1.5 ml-1">
                       Текущий балл ЕНТ
@@ -3776,20 +3785,20 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
       {/* Modal 8: Edit ENT Scores & Profiles */}
       <AnimatePresence>
         {isEditEntModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-surge-card rounded-[2.5rem] p-8 max-w-xl w-full border border-amber-500/30 shadow-2xl space-y-6 text-surge-ink text-left my-8"
+              className="bg-surge-bg/95 backdrop-blur-xl solid-surface rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 max-w-xl w-full mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto border border-amber-500/30 shadow-2xl space-y-6 text-surge-ink text-left my-4 sm:my-8"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center font-bold">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center font-bold shrink-0">
                     <Trophy size={24} />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-display font-black text-surge-ink">Редактирование баллов ЕНТ</h3>
+                    <h3 className="text-xl md:text-2xl font-display font-black text-surge-ink">Редактирование баллов ЕНТ</h3>
                     <p className="text-xs text-surge-ink/50 mt-0.5">Измените ваши профильные предметы и баллы по 5 предметам</p>
                   </div>
                 </div>
@@ -3802,7 +3811,7 @@ export const ClassroomPortal: React.FC<ClassroomPortalProps> = ({
               </div>
 
               <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[11px] font-black uppercase tracking-widest text-surge-ink/50 mb-2">Целевой балл (Грант)</label>
                     <input 

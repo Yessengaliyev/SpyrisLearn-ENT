@@ -59,9 +59,26 @@
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
+@media (max-width: 767px) {
+  .mobile-solid-sidebar {
+    background: var(--color-surge-bg) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  body.glass .mobile-solid-sidebar {
+    background: #0a0a0c !important;
+  }
+}
+
+body.glass .solid-surface {
+  background-color: rgba(12, 12, 16, 0.96) !important;
+}
+
 @layer base {
   body {
     @apply bg-surge-bg text-surge-ink font-sans antialiased;
+    color-scheme: dark;
+    overflow-x: clip;
     background-image: radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 60%);
     background-attachment: fixed;
   }
@@ -164,6 +181,7 @@
 }
 
 body.light {
+  color-scheme: light;
   --color-surge-bg: #FAFAFA;
   --color-surge-card: rgba(0, 0, 0, 0.02);
   --color-surge-ink: #050505;
@@ -172,11 +190,11 @@ body.light {
 }
 
 body.light .glass-panel {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
 }
 
 body.light .icon-glow-container {
@@ -285,6 +303,7 @@ body.ocean {
 }
 
 body.diamond {
+  color-scheme: light;
   --color-surge-bg: #f0f8ff;
   --color-surge-card: rgba(185, 242, 255, 0.2);
   --color-surge-ink: #000000;
@@ -292,4 +311,12 @@ body.diamond {
   --color-surge-purple-dark: #0099cc;
   --color-surge-border: rgba(0, 191, 255, 0.3);
   background-image: radial-gradient(circle at 50% 50%, rgba(0, 191, 255, 0.1) 0%, transparent 60%);
+}
+
+body.diamond .glass-panel {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 191, 255, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(0, 191, 255, 0.08);
 }

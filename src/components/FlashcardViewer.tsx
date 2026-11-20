@@ -64,9 +64,9 @@ function Card({
       >
         {/* Front Side: QUESTION */}
         <div 
-          className="absolute inset-0 w-full h-full bg-surge-card border-2 border-surge-purple/20 rounded-[2.5rem] shadow-2xl flex flex-col p-10 backface-hidden overflow-hidden group hover:border-surge-purple/50 transition-colors"
+          className="absolute inset-0 w-full h-full bg-surge-card border-2 border-surge-purple/20 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl flex flex-col p-5 sm:p-8 md:p-10 backface-hidden overflow-hidden group hover:border-surge-purple/50 transition-colors"
         >
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-4 sm:mb-8">
             <div className="px-3 py-1 bg-surge-purple/10 rounded-lg border border-surge-purple/20 text-[10px] font-bold text-surge-purple uppercase tracking-widest">
               Question
             </div>
@@ -76,12 +76,12 @@ function Card({
           </div>
 
           <div className="flex-grow flex flex-col justify-center text-center">
-            <h3 className="font-display font-bold text-surge-ink text-2xl md:text-3xl leading-tight">
+            <h3 className="font-display font-bold text-surge-ink text-lg sm:text-2xl md:text-3xl leading-tight break-words">
               {card.front}
             </h3>
           </div>
 
-          <div className="absolute bottom-10 left-0 w-full flex justify-center">
+          <div className="absolute bottom-5 sm:bottom-10 left-0 w-full flex justify-center">
             <div className="flex items-center gap-2 text-[10px] font-bold text-surge-purple/40 uppercase tracking-widest animate-pulse">
               <RotateCcw size={14} />
               Tap to flip
@@ -91,7 +91,7 @@ function Card({
 
         {/* Back Side: ANSWER */}
         <div 
-          className="absolute inset-0 w-full h-full bg-surge-purple border-4 border-white/20 rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center p-10 backface-hidden rotate-y-180 overflow-hidden"
+          className="absolute inset-0 w-full h-full bg-surge-purple border-4 border-white/20 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center p-5 sm:p-8 md:p-10 backface-hidden rotate-y-180 overflow-hidden"
         >
           {/* Decorative Pattern */}
           <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -99,13 +99,13 @@ function Card({
           </div>
 
           <div className="relative z-10 text-center">
-            <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-6">Answer</div>
-            <p className="text-xl md:text-2xl text-white font-medium leading-relaxed">
+            <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-3 sm:mb-6">Answer</div>
+            <p className="text-base sm:text-xl md:text-2xl text-white font-medium leading-relaxed break-words">
               {card.back}
             </p>
           </div>
 
-          <div className="absolute bottom-10 text-white/40 text-[10px] font-bold uppercase tracking-widest">
+          <div className="absolute bottom-5 sm:bottom-10 text-white/40 text-[10px] font-bold uppercase tracking-widest">
             Tap to see question
           </div>
         </div>
@@ -151,7 +151,7 @@ export function FlashcardViewer({ flashcards }: Props) {
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto my-12 px-4 flex flex-col items-center">
+    <div className="w-full max-w-xl mx-auto my-6 md:my-12 px-1 sm:px-4 flex flex-col items-center">
       {/* Header Info */}
       <div className="w-full flex justify-between items-center mb-8">
         <div className="flex items-center gap-2 px-4 py-2 bg-surge-purple/10 rounded-full border border-surge-purple/20">
@@ -189,7 +189,7 @@ export function FlashcardViewer({ flashcards }: Props) {
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="absolute inset-0 bg-surge-card border-2 border-dashed border-surge-purple/20 rounded-[2.5rem] flex flex-col items-center justify-center p-10 text-center"
+            className="absolute inset-0 bg-surge-card border-2 border-dashed border-surge-purple/20 rounded-[2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center p-6 sm:p-10 text-center"
           >
             <div className="w-20 h-20 rounded-full bg-surge-purple/10 flex items-center justify-center mb-6">
               <CheckCircle2 size={40} className="text-surge-purple" />
@@ -206,11 +206,11 @@ export function FlashcardViewer({ flashcards }: Props) {
       </div>
 
       {/* Navigation Controls */}
-      <div className="flex items-center gap-8 mt-12">
+      <div className="flex items-center gap-4 sm:gap-8 mt-8 md:mt-12">
         <button 
           onClick={handlePrev}
           disabled={currentIndex === 0}
-          className="w-16 h-16 rounded-2xl bg-surge-card border border-surge-border flex items-center justify-center text-surge-ink/40 hover:text-surge-purple hover:border-surge-purple transition-all hover:scale-110 active:scale-95 shadow-xl disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-surge-card border border-surge-border flex items-center justify-center text-surge-ink/40 hover:text-surge-purple hover:border-surge-purple transition-all hover:scale-110 active:scale-95 shadow-xl disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:scale-100 shrink-0"
           title="Previous Card"
         >
           <ChevronLeft size={28} />
@@ -236,7 +236,7 @@ export function FlashcardViewer({ flashcards }: Props) {
         <button 
           onClick={handleNext}
           disabled={currentIndex === flashcards.length - 1}
-          className="w-16 h-16 rounded-2xl bg-surge-card border border-surge-border flex items-center justify-center text-surge-ink/40 hover:text-surge-purple hover:border-surge-purple transition-all hover:scale-110 active:scale-95 shadow-xl disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-surge-card border border-surge-border flex items-center justify-center text-surge-ink/40 hover:text-surge-purple hover:border-surge-purple transition-all hover:scale-110 active:scale-95 shadow-xl disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:scale-100 shrink-0"
           title="Next Card"
         >
           <ChevronRight size={28} />

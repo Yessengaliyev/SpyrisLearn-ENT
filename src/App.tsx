@@ -137,8 +137,8 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-surge-bg flex items-center justify-center p-8 text-center">
-          <div className="max-w-md bg-surge-card p-10 rounded-[2.5rem] border-2 border-red-500/20 shadow-2xl">
+        <div className="min-h-screen bg-surge-bg flex items-center justify-center p-4 sm:p-8 text-center">
+          <div className="max-w-md w-full mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto bg-surge-bg/95 backdrop-blur-xl solid-surface p-6 sm:p-10 rounded-[2rem] md:rounded-[2.5rem] border-2 border-red-500/20 shadow-2xl">
             <AlertCircle size={64} className="text-red-500 mx-auto mb-6" />
             <h2 className="text-2xl font-display font-bold text-surge-ink mb-4">Something went wrong</h2>
             <p className="text-surge-ink/40 text-sm mb-8 leading-relaxed">
@@ -320,7 +320,7 @@ const CameraModal = ({ isOpen, onClose, onCapture }: { isOpen: boolean, onClose:
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center">
+    <div className="fixed inset-0 z-[150] bg-black flex flex-col items-center justify-center">
       <div className="relative w-full h-full max-w-2xl mx-auto flex flex-col">
         <div className="flex justify-between items-center p-4 text-white">
           <h3 className="font-bold">Камера</h3>
@@ -446,7 +446,7 @@ function AppContent() {
   }, [sessions]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const signupInProgressRef = useRef(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => (typeof window !== 'undefined' ? window.innerWidth >= 768 : true));
   const [theme, setTheme] = useState<'dark' | 'light' | 'night' | 'glass' | 'neon' | 'gold' | 'silver' | 'ocean' | 'diamond'>('dark');
   const [appLanguage, setAppLanguage] = useState<AppLanguage>('ru');
 
@@ -2226,14 +2226,14 @@ ${strictLang}`,
     const tAuth = TRANSLATIONS[appLanguage]?.auth || TRANSLATIONS.ru.auth;
 
     return (
-      <div className="min-h-screen bg-surge-bg flex items-center justify-center p-4 md:p-8 relative overflow-y-auto">
+      <div className="min-h-screen bg-surge-bg flex items-center justify-center p-3 sm:p-4 md:p-8 relative overflow-y-auto overflow-x-hidden">
         <div className="absolute top-1/3 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-surge-purple/15 blur-[130px] rounded-full pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] bg-teal-500/10 blur-[130px] rounded-full pointer-events-none" />
         
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="w-full max-w-4xl glass-panel rounded-[2.5rem] p-6 md:p-10 shadow-2xl relative z-10 my-8 border-2 border-surge-ink/10"
+          className="w-full max-w-4xl glass-panel rounded-[2rem] md:rounded-[2.5rem] p-4 sm:p-6 md:p-10 shadow-2xl relative z-10 my-4 md:my-8 border-2 border-surge-ink/10"
         >
           {/* Top Language Switcher Bar on Login Screen */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6 pb-6 border-b border-surge-ink/10">
@@ -2241,7 +2241,7 @@ ${strictLang}`,
               <Globe size={16} className="text-surge-purple" />
               <span>{tAuth.langLabel}:</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-surge-ink/5 p-1 rounded-2xl border border-surge-ink/10">
+            <div className="flex flex-wrap justify-center items-center gap-1.5 bg-surge-ink/5 p-1 rounded-2xl border border-surge-ink/10">
               <button 
                 type="button"
                 onClick={() => setAppLanguage('ru')}
@@ -2301,7 +2301,7 @@ ${strictLang}`,
           {/* CONDITIONAL RENDER: ROLE REGISTRATION/LOGIN OR 2 DOORS */}
           {selectedEntryRole === 'teacher' ? (
             /* TEACHER REGISTRATION & LOGIN FORM */
-            <div className="bg-surge-card rounded-3xl p-6 md:p-8 border-2 border-teal-500/40 shadow-2xl relative mb-8">
+            <div className="bg-surge-card rounded-3xl p-4 sm:p-6 md:p-8 border-2 border-teal-500/40 shadow-2xl relative mb-8">
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-surge-ink/10">
                 <button
                   type="button"
@@ -2475,7 +2475,7 @@ ${strictLang}`,
             </div>
           ) : selectedEntryRole === 'student' ? (
             /* STUDENT REGISTRATION & LOGIN FORM */
-            <div className="bg-surge-card rounded-3xl p-6 md:p-8 border-2 border-surge-purple/40 shadow-2xl relative mb-8">
+            <div className="bg-surge-card rounded-3xl p-4 sm:p-6 md:p-8 border-2 border-surge-purple/40 shadow-2xl relative mb-8">
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-surge-ink/10">
                 <button
                   type="button"
@@ -2676,7 +2676,7 @@ ${strictLang}`,
             <div className="space-y-6 mb-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Door 1: Student */}
-                <div className="bg-surge-card rounded-3xl p-6 md:p-7 border-2 border-surge-purple/30 shadow-xl flex flex-col justify-between hover:border-surge-purple transition-all relative overflow-hidden group">
+                <div className="bg-surge-card rounded-3xl p-5 sm:p-6 md:p-7 border-2 border-surge-purple/30 shadow-xl flex flex-col justify-between hover:border-surge-purple transition-all relative overflow-hidden group">
                   <div className="absolute -right-6 -bottom-6 text-surge-purple/5 pointer-events-none">
                     <GraduationCap size={140} />
                   </div>
@@ -2735,7 +2735,7 @@ ${strictLang}`,
                 </div>
 
                 {/* Door 2: Teacher */}
-                <div className="bg-surge-card rounded-3xl p-6 md:p-7 border-2 border-teal-500/30 shadow-xl flex flex-col justify-between hover:border-teal-500 transition-all relative overflow-hidden group">
+                <div className="bg-surge-card rounded-3xl p-5 sm:p-6 md:p-7 border-2 border-teal-500/30 shadow-xl flex flex-col justify-between hover:border-teal-500 transition-all relative overflow-hidden group">
                   <div className="absolute -right-6 -bottom-6 text-teal-500/5 pointer-events-none">
                     <Users size={140} />
                   </div>
@@ -2800,7 +2800,7 @@ ${strictLang}`,
                   <Globe size={16} className="text-surge-purple shrink-0" />
                   <span>{tAuth.quickGoogleTitle}</span>
                 </div>
-                <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-wrap items-center gap-2.5 w-full md:w-auto">
                   <button
                     type="button"
                     onClick={() => handleGoogleLogin('student')}
@@ -2926,7 +2926,7 @@ ${strictLang}`,
   };
 
   return (
-    <div className="h-screen flex flex-col bg-surge-bg text-surge-ink font-sans">
+    <div className="h-screen flex flex-col bg-surge-bg text-surge-ink font-sans overflow-x-hidden">
       <CameraModal 
         isOpen={isCameraOpen} 
         onClose={() => {
@@ -2943,17 +2943,17 @@ ${strictLang}`,
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
             onClick={() => setIsProfileModalOpen(false)}
           >
             <motion.div 
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="w-full max-w-lg bg-surge-card border border-surge-border rounded-[2.5rem] shadow-2xl overflow-hidden"
+              className="w-full max-w-lg mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto bg-surge-bg/95 backdrop-blur-xl solid-surface border border-surge-border rounded-[2rem] md:rounded-[2.5rem] shadow-2xl"
               onClick={e => e.stopPropagation()}
             >
-              <div className="relative h-32 bg-gradient-to-r from-surge-purple to-violet-600">
+              <div className="relative h-24 sm:h-32 bg-gradient-to-r from-surge-purple to-violet-600">
                 <button 
                   onClick={() => setIsProfileModalOpen(false)}
                   className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full transition-colors"
@@ -2962,10 +2962,10 @@ ${strictLang}`,
                 </button>
               </div>
               
-              <div className="px-8 pb-8 -mt-12 relative">
+              <div className="px-5 sm:px-8 pb-6 sm:pb-8 -mt-12 relative">
                 <div className="flex flex-col items-center text-center">
                   <div className="relative group">
-                    <div className="w-24 h-24 rounded-3xl bg-surge-card border-4 border-surge-card shadow-xl overflow-hidden flex items-center justify-center text-3xl font-bold text-surge-purple bg-surge-purple/10">
+                    <div className="w-24 h-24 rounded-3xl bg-surge-bg border-4 border-surge-bg shadow-xl overflow-hidden flex items-center justify-center text-3xl font-bold text-surge-purple">
                       {user?.photoURL ? (
                         <img src={user.photoURL} alt={user.name} className="w-full h-full object-cover" />
                       ) : (
@@ -2998,7 +2998,7 @@ ${strictLang}`,
                         <h2 className="text-2xl font-black text-surge-ink tracking-tight">{user?.name || 'Guest'}</h2>
                         <button 
                           onClick={() => { setTempName(user?.name || ''); setEditingName(true); }}
-                          className="p-1.5 text-surge-ink/20 hover:text-surge-purple opacity-0 group-hover:opacity-100 transition-all"
+                          className="p-1.5 text-surge-ink/30 hover:text-surge-purple opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-all"
                         >
                           <Edit2 size={16} />
                         </button>
@@ -3008,7 +3008,7 @@ ${strictLang}`,
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 mt-8">
+                <div className="grid grid-cols-3 gap-2.5 sm:gap-4 mt-6 sm:mt-8">
                   <div className="bg-surge-ink/5 p-4 rounded-2xl text-center border border-surge-ink/5">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-surge-purple mb-1">Level</p>
                     <p className="text-xl font-black text-surge-ink">{user?.level || 1}</p>
@@ -3054,17 +3054,17 @@ ${strictLang}`,
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
             onClick={() => setIsAvatarPickerOpen(false)}
           >
             <motion.div 
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="w-full max-w-md bg-surge-card border border-surge-border rounded-[2.5rem] shadow-2xl p-8"
+              className="w-full max-w-md mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto bg-surge-bg/95 backdrop-blur-xl solid-surface border border-surge-border rounded-[2rem] md:rounded-[2.5rem] shadow-2xl p-5 sm:p-8"
               onClick={e => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center mb-8">
+              <div className="flex justify-between items-center mb-6 sm:mb-8">
                 <h3 className="text-xl font-black text-surge-ink">Выберите аватар</h3>
                 <button onClick={() => setIsAvatarPickerOpen(false)} className="p-2 hover:bg-surge-ink/5 rounded-full">
                   <X size={20} />
@@ -3072,19 +3072,19 @@ ${strictLang}`,
               </div>
 
               <div className="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
                   <button 
                     onClick={() => {
                       setIsCameraForAvatar(true);
                       setIsCameraOpen(true);
                       setIsAvatarPickerOpen(false);
                     }}
-                    className="flex flex-col items-center gap-3 p-6 bg-surge-purple/10 border-2 border-surge-purple/20 rounded-3xl hover:bg-surge-purple/20 transition-all group"
+                    className="flex flex-col items-center gap-3 p-4 sm:p-6 bg-surge-purple/10 border-2 border-surge-purple/20 rounded-3xl hover:bg-surge-purple/20 transition-all group"
                   >
                     <Camera size={32} className="text-surge-purple group-hover:scale-110 transition-transform" />
                     <span className="text-sm font-bold text-surge-purple">Камера</span>
                   </button>
-                  <label className="flex flex-col items-center gap-3 p-6 bg-blue-500/10 border-2 border-blue-500/20 rounded-3xl hover:bg-blue-500/20 transition-all group cursor-pointer">
+                  <label className="flex flex-col items-center gap-3 p-4 sm:p-6 bg-blue-500/10 border-2 border-blue-500/20 rounded-3xl hover:bg-blue-500/20 transition-all group cursor-pointer">
                     <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                     <ImageIcon size={32} className="text-blue-500 group-hover:scale-110 transition-transform" />
                     <span className="text-sm font-bold text-blue-500">Галерея</span>
@@ -3092,7 +3092,7 @@ ${strictLang}`,
                 </div>
 
                 <h4 className="text-xs font-bold uppercase tracking-widest text-surge-ink/30 mb-4">Коллекция Spyris</h4>
-                <div className="grid grid-cols-4 gap-4 pb-4">
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 sm:gap-4 pb-4">
                   {PRESET_AVATARS.map((url, idx) => (
                     <button 
                       key={idx}
@@ -3132,11 +3132,19 @@ ${strictLang}`,
         {/* Sidebar */}
         <AnimatePresence>
         {isSidebarOpen && (
+          <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/60 z-[105] md:hidden"
+          />
           <motion.aside
             initial={{ x: -300, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -300, opacity: 0 }}
-            className="fixed md:relative z-[110] w-72 h-full glass-panel flex flex-col shadow-2xl"
+            className="fixed md:relative z-[110] w-72 max-w-[85vw] h-full glass-panel mobile-solid-sidebar flex flex-col shadow-2xl"
           >
             <div className="p-6 flex items-center justify-between gap-2">
               <div className="flex items-center gap-3 min-w-0">
@@ -3160,7 +3168,7 @@ ${strictLang}`,
 
             <div className="px-4 mb-6 flex gap-2">
               <button 
-                onClick={() => createNewSession('chat', selectedDept)}
+                onClick={() => { createNewSession('chat', selectedDept); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
                 className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-surge-purple to-indigo-600 hover:from-surge-purple-dark hover:to-indigo-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-surge-purple/20 active:scale-95 group overflow-hidden relative hover-glass-card hover:shadow-[0_0_25px_rgba(168,85,247,0.4)]"
               >
                 <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent,rgba(255,255,255,0.2),transparent)] -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -3169,7 +3177,7 @@ ${strictLang}`,
               </button>
               
               <button
-                onClick={() => { setSelectedDept('Projects'); setCurrentSessionId(null); }}
+                onClick={() => { setSelectedDept('Projects'); setCurrentSessionId(null); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
                 className={cn(
                   "px-4 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold transition-all shadow-lg active:scale-95",
                   selectedDept === 'Projects' 
@@ -3200,7 +3208,7 @@ ${strictLang}`,
               {/* Experience Highlight */}
               <div className="px-2">
                 <button
-                  onClick={() => { setSelectedDept('Experience'); setCurrentSessionId(null); }}
+                  onClick={() => { setSelectedDept('Experience'); setCurrentSessionId(null); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
                   className={cn(
                     "w-full p-4 rounded-2xl border transition-all relative overflow-hidden group hover-glass-card",
                     selectedDept === 'Experience'
@@ -3245,7 +3253,7 @@ ${strictLang}`,
                         key={dept.id}
                         whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => { setSelectedDept(dept.id); setCurrentSessionId(null); }}
+                        onClick={() => { setSelectedDept(dept.id); setCurrentSessionId(null); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
                         className={cn(
                           "w-full flex flex-col items-center justify-center p-3 rounded-2xl text-[10px] font-bold transition-all relative group border gap-2 text-center",
                           isActive 
@@ -3297,7 +3305,7 @@ ${strictLang}`,
                         )}
                       >
                         <span className="flex-1 truncate font-medium">{session.title}</span>
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                        <div className="flex items-center gap-2 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-all">
                           <Archive 
                             size={14} 
                             className="hover:text-surge-purple transition-all cursor-pointer" 
@@ -3338,7 +3346,7 @@ ${strictLang}`,
                         )}
                       >
                         <span className="flex-1 truncate font-medium">{session.title}</span>
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                        <div className="flex items-center gap-2 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-all">
                           <RotateCcw 
                             size={14} 
                             className="hover:text-surge-purple cursor-pointer" 
@@ -3359,7 +3367,7 @@ ${strictLang}`,
 
             <div className="p-4 border-t border-surge-border bg-surge-ink/[0.02]">
               <div 
-                onClick={() => setIsProfileModalOpen(true)}
+                onClick={() => { setIsProfileModalOpen(true); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-surge-ink/5 transition-all cursor-pointer group relative hover-glass-card"
               >
                 <div className="w-10 h-10 rounded-xl bg-surge-purple/20 flex items-center justify-center text-surge-purple font-bold text-sm shadow-inner border border-surge-purple/30 overflow-hidden group-hover:ring-2 group-hover:ring-surge-purple/50 transition-all duration-300">
@@ -3423,6 +3431,7 @@ ${strictLang}`,
               </div>
             </div>
           </motion.aside>
+          </>
         )}
       </AnimatePresence>
 
@@ -3466,7 +3475,7 @@ ${strictLang}`,
         </div>
 
         {!currentSessionId ? (
-          <div className="flex-1 flex flex-col items-center justify-start p-8 pt-20 text-center relative overflow-y-auto mesh-bg">
+          <div className="flex-1 flex flex-col items-center justify-start p-4 md:p-8 pt-8 md:pt-20 text-center relative overflow-y-auto overflow-x-hidden mesh-bg">
             <motion.div 
               animate={{ 
                 x: [0, 20, -20, 0], 
@@ -3495,11 +3504,11 @@ ${strictLang}`,
                 <>
                   <motion.div 
                     whileHover={{ scale: 1.05, rotate: 0 }}
-                    className="w-24 h-24 bg-black/50 backdrop-blur-xl border-2 border-surge-purple/30 rounded-[2rem] flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-surge-purple/40 rotate-3 cursor-pointer transition-all hover-glass-card"
+                    className="w-16 h-16 md:w-24 md:h-24 bg-black/50 backdrop-blur-xl border-2 border-surge-purple/30 rounded-2xl md:rounded-[2rem] flex items-center justify-center mx-auto mb-6 md:mb-10 shadow-2xl shadow-surge-purple/40 rotate-3 cursor-pointer transition-all hover-glass-card"
                   >
-                    <Aperture className="text-surge-purple glow-text pulse-ring" size={48} />
+                    <Aperture className="text-surge-purple glow-text pulse-ring" size={36} />
                   </motion.div>
-                  <h2 className="font-display text-5xl md:text-7xl font-black mb-6 text-surge-ink tracking-tighter">
+                  <h2 className="font-display text-3xl sm:text-5xl md:text-7xl font-black mb-4 md:mb-6 text-surge-ink tracking-tighter">
                     {(TRANSLATIONS[appLanguage] as any).readyTo || "READY TO"} <span className="text-surge-purple italic glow-text hover:text-indigo-400 transition-colors cursor-pointer block mt-2">{(TRANSLATIONS[appLanguage] as any).study?.toUpperCase() || "STUDY"}</span>?
                   </h2>
                 </>
@@ -3513,16 +3522,18 @@ ${strictLang}`,
                   showToast={showToast}
                   onNavigateToDept={(dept) => setSelectedDept(dept)}
                   appLanguage={appLanguage}
+                  isSidebarOpen={isSidebarOpen}
+                  onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
                 />
               ) : selectedDept === 'Marks' ? (
-                <div className="bg-surge-card rounded-[2.5rem] p-10 shadow-2xl mb-12 border-2 border-amber-500/20 relative overflow-hidden text-left">
+                <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-2xl mb-12 border-2 border-amber-500/20 relative overflow-hidden text-left">
                   <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none text-amber-500">
                     <Trophy size={200} />
                   </div>
-                  <h3 className="text-3xl font-display font-black text-amber-500 mb-2 tracking-tight">
+                  <h3 className="text-2xl md:text-3xl font-display font-black text-amber-500 mb-2 tracking-tight">
                     {appLanguage === 'ru' ? 'Прогноз и Анализ баллов ЕНТ 2026' : appLanguage === 'kk' ? 'ҰБТ 2026 баллдарын талдау' : 'ENT 2026 Score Analyzer'}
                   </h3>
-                  <p className="text-surge-ink/40 mb-8 text-sm font-medium">
+                  <p className="text-surge-ink/40 mb-6 md:mb-8 text-sm font-medium">
                     {appLanguage === 'ru' 
                       ? 'Введите ваши текущие баллы пробных тестирований по предметам ЕНТ. Наш ИИ проанализирует ваши результаты и составит персональный пошаговый план подготовки на максимальный балл (140 из 140).'
                       : appLanguage === 'kk'
@@ -3531,11 +3542,11 @@ ${strictLang}`,
                   </p>
 
                   {/* ENT Overall Progress Summary Card */}
-                  <div className="p-6 rounded-3xl bg-amber-500/10 border border-amber-500/20 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                  <div className="p-4 sm:p-6 rounded-3xl bg-amber-500/10 border border-amber-500/20 mb-6 md:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 relative z-10">
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-amber-500/60">Текущий общий результат</p>
-                      <h4 className="text-4xl font-display font-black text-amber-500 mt-1">
-                        {Object.entries(marksData).reduce((sum, [sub, val]) => sum + (disabledSubjects.includes(sub) ? 0 : Number(val || 0)), 0)} <span className="text-lg text-surge-ink/40 font-medium">/ 140 баллов</span>
+                      <h4 className="text-3xl md:text-4xl font-display font-black text-amber-500 mt-1">
+                        {Object.entries(marksData).reduce((sum, [sub, val]) => sum + (disabledSubjects.includes(sub) ? 0 : Number(val || 0)), 0)} <span className="text-base md:text-lg text-surge-ink/40 font-medium">/ 140 баллов</span>
                       </h4>
                       <p className="text-xs text-surge-ink/50 mt-1 font-medium">
                         {appLanguage === 'ru' 
@@ -3615,7 +3626,7 @@ ${strictLang}`,
                   </div>
                   
                   {/* Profile Subjects Pickers */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-6 bg-amber-500/5 rounded-3xl border border-amber-500/20 relative z-10 text-left">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8 p-4 sm:p-6 bg-amber-500/5 rounded-3xl border border-amber-500/20 relative z-10 text-left">
                     <div>
                       <label className="block text-[11px] font-black uppercase tracking-widest text-amber-600 mb-2">
                         {appLanguage === 'ru' ? 'Выбор профильного предмета 1 *' : '1-ші бейінді пәнді таңдау *'}
@@ -3703,7 +3714,7 @@ ${strictLang}`,
                                 }}
                                 className={cn(
                                   "p-1.5 rounded-lg transition-all",
-                                  isDisabled ? "text-amber-500 bg-amber-500/10" : "text-surge-ink/20 hover:text-amber-500 hover:bg-amber-500/10 opacity-0 group-hover:opacity-100"
+                                  isDisabled ? "text-amber-500 bg-amber-500/10" : "text-surge-ink/30 hover:text-amber-500 hover:bg-amber-500/10 opacity-70 md:opacity-0 md:group-hover:opacity-100"
                                 )}
                                 title={isDisabled ? "Показать предмет" : "Скрыть предмет"}
                               >
@@ -3806,7 +3817,7 @@ ${strictLang}`,
                           Clear Analysis
                         </button>
                       </div>
-                      <div className="bg-surge-ink/5 p-8 rounded-[2rem] border border-surge-ink/10 shadow-inner max-h-[500px] overflow-y-auto custom-scrollbar">
+                      <div className="bg-surge-ink/5 p-5 sm:p-8 rounded-[2rem] border border-surge-ink/10 shadow-inner max-h-[500px] overflow-y-auto custom-scrollbar">
                         <div className="markdown-body overflow-x-auto">
                           <Markdown>{marksAnalysisResult}</Markdown>
                         </div>
@@ -3823,22 +3834,22 @@ ${strictLang}`,
                   )}
                 </div>
               ) : selectedDept === 'Flashcards' ? (
-                <div className="bg-surge-card rounded-[2.5rem] p-10 shadow-2xl mb-12 border-2 border-blue-500/20 relative overflow-hidden">
+                <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-2xl mb-12 border-2 border-blue-500/20 relative overflow-hidden">
                   <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl"></div>
                   <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none text-blue-500">
                     <Layers size={200} />
                   </div>
-                  <h3 className="text-3xl font-display font-black text-blue-500 mb-2 tracking-tight relative z-10">{TRANSLATIONS[appLanguage].flashcardStudio || "Flashcard Studio"}</h3>
-                  <p className="text-surge-ink/40 mb-10 text-sm font-medium relative z-10">{TRANSLATIONS[appLanguage].flashcardSubtitle || "Create custom study cards in seconds."}</p>
+                  <h3 className="text-2xl md:text-3xl font-display font-black text-blue-500 mb-2 tracking-tight relative z-10">{TRANSLATIONS[appLanguage].flashcardStudio || "Flashcard Studio"}</h3>
+                  <p className="text-surge-ink/40 mb-6 md:mb-10 text-sm font-medium relative z-10">{TRANSLATIONS[appLanguage].flashcardSubtitle || "Create custom study cards in seconds."}</p>
                   
-                  <div className="space-y-6 mb-10 relative z-10">
-                    <div className="flex flex-col md:flex-row gap-6">
+                  <div className="space-y-6 mb-8 md:mb-10 relative z-10">
+                    <div className="flex flex-col md:flex-row gap-4 md:gap-6">
                       <div className="flex-1">
                         <label className="block text-[10px] font-bold text-surge-ink/30 uppercase tracking-widest mb-3 ml-2">Предмет ЕНТ</label>
                         <select 
                           value={flashcardsData.grade}
                           onChange={(e) => setFlashcardsData({...flashcardsData, grade: e.target.value})}
-                          className="w-full bg-surge-ink/10 border-2 border-transparent rounded-2xl px-6 py-5 text-surge-ink font-bold focus:outline-none focus:border-blue-500/30 focus:bg-surge-ink/[0.05] transition-all cursor-pointer appearance-none"
+                          className="w-full bg-surge-ink/10 border-2 border-transparent rounded-2xl px-4 sm:px-6 py-3.5 md:py-5 text-surge-ink font-bold focus:outline-none focus:border-blue-500/30 focus:bg-surge-ink/[0.05] transition-all cursor-pointer appearance-none"
                         >
                           <option value="Математика (Профиль)" className="bg-surge-bg text-surge-ink">Математика ЕНТ</option>
                           <option value="Физика" className="bg-surge-bg text-surge-ink">Физика ЕНТ</option>
@@ -3861,7 +3872,7 @@ ${strictLang}`,
                         <select 
                           value={flashcardsData.count}
                           onChange={(e) => setFlashcardsData({...flashcardsData, count: parseInt(e.target.value)})}
-                          className="w-full bg-surge-ink/10 border-2 border-transparent rounded-2xl px-6 py-5 text-surge-ink font-bold focus:outline-none focus:border-blue-500/30 focus:bg-surge-ink/[0.05] transition-all appearance-none cursor-pointer"
+                          className="w-full bg-surge-ink/10 border-2 border-transparent rounded-2xl px-4 sm:px-6 py-3.5 md:py-5 text-surge-ink font-bold focus:outline-none focus:border-blue-500/30 focus:bg-surge-ink/[0.05] transition-all appearance-none cursor-pointer"
                         >
                           <option value={5} className="bg-surge-bg text-surge-ink">5 Cards</option>
                           <option value={10} className="bg-surge-bg text-surge-ink">10 Cards</option>
@@ -3871,7 +3882,7 @@ ${strictLang}`,
                       </div>
                     </div>
                     <div>
-                      <div className="flex items-center justify-between mb-3 ml-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 ml-2">
                         <label className="block text-[10px] font-bold text-surge-ink/30 uppercase tracking-widest">Комментарий к карточкам (пожелания/акцент)</label>
                         <div className="flex items-center gap-4">
                           {uploadedFiles.length > 0 ? (
@@ -3911,7 +3922,7 @@ ${strictLang}`,
                         placeholder="Например: С упором на формулы, ключевые даты или сложные термины..."
                         value={flashcardsData.topic}
                         onChange={(e) => setFlashcardsData({...flashcardsData, topic: e.target.value})}
-                        className="w-full bg-surge-ink/10 border-2 border-transparent rounded-2xl px-6 py-5 text-surge-ink font-bold focus:outline-none focus:border-blue-500/30 focus:bg-surge-ink/[0.05] transition-all text-sm"
+                        className="w-full bg-surge-ink/10 border-2 border-transparent rounded-2xl px-4 sm:px-6 py-3.5 md:py-5 text-surge-ink font-bold focus:outline-none focus:border-blue-500/30 focus:bg-surge-ink/[0.05] transition-all text-sm"
                       />
                     </div>
 
@@ -3962,19 +3973,19 @@ ${strictLang}`,
                   </button>
                 </div>
               ) : selectedDept === 'Quizzes' ? (
-                <div className="bg-surge-card rounded-[2.5rem] p-10 shadow-2xl mb-12 border-2 border-pink-500/20 relative overflow-hidden">
+                <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-2xl mb-12 border-2 border-pink-500/20 relative overflow-hidden">
                   <div className="absolute -left-10 -bottom-10 w-64 h-64 bg-pink-500/5 rounded-full blur-3xl"></div>
                   <div className="absolute -left-10 -bottom-10 opacity-5 pointer-events-none text-pink-500">
                     <HelpCircle size={200} />
                   </div>
                   
                   <div className="relative z-10">
-                    <h3 className="text-3xl font-display font-black text-pink-500 mb-2 tracking-tight">{TRANSLATIONS[appLanguage].quizGenerator || "Pop Quiz Generator"}</h3>
-                    <p className="text-surge-ink/40 mb-10 text-sm font-medium">{TRANSLATIONS[appLanguage].quizSubtitle || "Test your knowledge with AI-generated questions."}</p>
+                    <h3 className="text-2xl md:text-3xl font-display font-black text-pink-500 mb-2 tracking-tight">{TRANSLATIONS[appLanguage].quizGenerator || "Pop Quiz Generator"}</h3>
+                    <p className="text-surge-ink/40 mb-6 md:mb-10 text-sm font-medium">{TRANSLATIONS[appLanguage].quizSubtitle || "Test your knowledge with AI-generated questions."}</p>
                     
-                    <div className="space-y-8 mb-10">
+                    <div className="space-y-6 md:space-y-8 mb-8 md:mb-10">
                       <div className="border-b-2 border-surge-ink/10 pb-4">
-                        <div className="flex items-center justify-between mb-2 ml-1">
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2 ml-1">
                           <label className="block text-[10px] font-bold text-surge-ink/30 uppercase tracking-widest">Предмет ЕНТ</label>
                         <div className="flex items-center gap-4">
                           {uploadedFiles.length > 0 ? (
@@ -4102,12 +4113,12 @@ ${strictLang}`,
                   </div>
                 </div>
               ) : selectedDept === 'Plan' ? (
-                <div className="bg-surge-card rounded-[2.5rem] p-10 shadow-2xl mb-12 border-2 border-green-500/20 relative overflow-hidden">
+                <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-2xl mb-12 border-2 border-green-500/20 relative overflow-hidden">
                   <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none text-green-500">
                     <Calendar size={200} />
                   </div>
-                  <h3 className="text-3xl font-display font-black text-green-500 mb-2 tracking-tight relative z-10">{TRANSLATIONS[appLanguage].studyPlanArchitect || "Study Plan Architect"}</h3>
-                  <p className="text-surge-ink/40 text-sm mb-10 font-medium relative z-10">{TRANSLATIONS[appLanguage].buildStructuredPath || "Build a structured path to your academic goals."}</p>
+                  <h3 className="text-2xl md:text-3xl font-display font-black text-green-500 mb-2 tracking-tight relative z-10">{TRANSLATIONS[appLanguage].studyPlanArchitect || "Study Plan Architect"}</h3>
+                  <p className="text-surge-ink/40 text-sm mb-6 md:mb-10 font-medium relative z-10">{TRANSLATIONS[appLanguage].buildStructuredPath || "Build a structured path to your academic goals."}</p>
                   
                   {!planResult ? (
                     <>
@@ -4153,9 +4164,9 @@ ${strictLang}`,
                       animate={{ opacity: 1, y: 0 }}
                       className="text-left relative z-10"
                     >
-                      <div className="flex justify-between items-center mb-6">
-                        <h4 className="text-green-500 font-display font-bold text-xl uppercase tracking-widest">Your Study Roadmap</h4>
-                        <div className="flex gap-4">
+                      <div className="flex flex-wrap justify-between items-center gap-2 mb-6">
+                        <h4 className="text-green-500 font-display font-bold text-lg sm:text-xl uppercase tracking-widest">Your Study Roadmap</h4>
+                        <div className="flex flex-wrap gap-4">
                           <button 
                             onClick={async () => {
                               if (user) {
@@ -4175,7 +4186,7 @@ ${strictLang}`,
                           </button>
                         </div>
                       </div>
-                      <div className="bg-surge-ink/5 p-8 rounded-[2rem] border border-surge-ink/10 shadow-inner max-h-[500px] overflow-y-auto custom-scrollbar">
+                      <div className="bg-surge-ink/5 p-5 sm:p-8 rounded-[2rem] border border-surge-ink/10 shadow-inner max-h-[500px] overflow-y-auto custom-scrollbar">
                         <div className="markdown-body overflow-x-auto">
                           <Markdown>{planResult}</Markdown>
                         </div>
@@ -4208,7 +4219,7 @@ ${strictLang}`,
                   onExit={() => setSelectedDept('General')}
                 />
               ) : selectedDept === 'Translator' ? (
-                <div className="bg-surge-card rounded-[2rem] p-8 shadow-2xl mb-12 border border-emerald-500/20 relative overflow-hidden text-surge-ink">
+                <div className="bg-surge-card rounded-[2rem] p-5 sm:p-8 shadow-2xl mb-12 border border-emerald-500/20 relative overflow-hidden text-surge-ink">
                   <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none text-emerald-500">
                     <Globe size={200} />
                   </div>
@@ -4233,7 +4244,7 @@ ${strictLang}`,
                   {translatorMode === 'translate' ? (
                     <>
                       <div className="space-y-6 mb-8 text-left relative z-10">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                           <div className="bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
                             <label className="block text-[10px] font-bold text-surge-ink/30 uppercase tracking-widest mb-2 ml-1">Source</label>
                             <select 
@@ -4242,7 +4253,7 @@ ${strictLang}`,
                               className="w-full bg-transparent border-none px-1 py-2 text-surge-ink focus:outline-none focus:ring-0 appearance-none font-bold"
                             >
                               {['Auto Detect', 'Russian', 'English', 'Kazakh', 'Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Korean', 'Turkish', 'Arabic', 'Italian', 'Portuguese'].map(lang => (
-                                <option key={lang} value={lang} className="bg-surge-card text-surge-ink">{lang}</option>
+                                <option key={lang} value={lang} className="bg-surge-bg text-surge-ink">{lang}</option>
                               ))}
                             </select>
                           </div>
@@ -4254,7 +4265,7 @@ ${strictLang}`,
                               className="w-full bg-transparent border-none px-1 py-2 text-surge-ink focus:outline-none focus:ring-0 appearance-none font-bold"
                             >
                               {['English', 'Russian', 'Kazakh', 'Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Korean', 'Turkish', 'Arabic', 'Italian', 'Portuguese'].map(lang => (
-                                <option key={lang} value={lang} className="bg-surge-card text-surge-ink">{lang}</option>
+                                <option key={lang} value={lang} className="bg-surge-bg text-surge-ink">{lang}</option>
                               ))}
                             </select>
                           </div>
@@ -4312,7 +4323,7 @@ ${strictLang}`,
                             className="w-full bg-surge-ink/5 border border-surge-ink/10 rounded-xl px-4 py-3 text-surge-ink focus:outline-none focus:border-emerald-500/50 transition-all resize-none font-medium text-sm"
                           />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                           <div className="bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
                             <label className="block text-[10px] font-bold text-surge-ink/30 uppercase tracking-widest mb-2 ml-1">
                               {appLanguage === 'kk' ? 'Көңіл-күй' : 'Текущее состояние'}
@@ -4323,7 +4334,7 @@ ${strictLang}`,
                               className="w-full bg-transparent border-none px-1 py-2 text-surge-ink focus:outline-none focus:ring-0 appearance-none font-bold text-sm"
                             >
                               {['Стресс / Переживания', 'Выгорание / Усталость', 'Тревожность перед тестом', 'Потеря мотивации', 'Одиночество / Непонимание'].map(t => (
-                                <option key={t} value={t} className="bg-surge-card text-surge-ink">{t}</option>
+                                <option key={t} value={t} className="bg-surge-bg text-surge-ink">{t}</option>
                               ))}
                             </select>
                           </div>
@@ -4337,7 +4348,7 @@ ${strictLang}`,
                               className="w-full bg-transparent border-none px-1 py-2 text-surge-ink focus:outline-none focus:ring-0 appearance-none font-bold text-sm"
                             >
                               {['Дружеское ободрение', 'Практический совет', 'Мощная мотивация', 'Спокойствие и дыхание'].map(l => (
-                                <option key={l} value={l} className="bg-surge-card text-surge-ink">{l}</option>
+                                <option key={l} value={l} className="bg-surge-bg text-surge-ink">{l}</option>
                               ))}
                             </select>
                           </div>
@@ -4374,12 +4385,12 @@ ${strictLang}`,
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="mt-8 p-8 bg-surge-card rounded-3xl text-left relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-t-8 border-emerald-500 overflow-hidden"
+                      className="mt-8 p-5 sm:p-8 bg-surge-card rounded-3xl text-left relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-t-8 border-emerald-500 overflow-hidden"
                     >
                       <div className="absolute top-0 right-0 p-4 opacity-10 text-emerald-500">
                         <Globe size={80} />
                       </div>
-                      <div className="flex justify-between items-center mb-6 border-b border-surge-ink/5 pb-4">
+                      <div className="flex flex-wrap justify-between items-center gap-2 mb-6 border-b border-surge-ink/5 pb-4">
                         <div>
                           <h4 className="text-emerald-500 font-display font-bold text-lg uppercase tracking-widest">AI Result Screen</h4>
                           <p className="text-surge-ink/40 text-[10px] font-bold uppercase tracking-widest">Generated by Spyris Neural Engine</p>
@@ -4417,14 +4428,14 @@ ${strictLang}`,
                   )}
                 </div>
               ) : selectedDept === 'Voice' ? (
-                <div className="bg-surge-card rounded-[2.5rem] p-10 shadow-2xl mb-12 border-2 border-indigo-500/20 relative overflow-hidden flex flex-col items-center min-h-[520px] justify-center">
+                <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-2xl mb-12 border-2 border-indigo-500/20 relative overflow-hidden flex flex-col items-center min-h-[420px] md:min-h-[520px] justify-center">
                   <div className="absolute -left-10 -top-10 w-64 h-64 bg-surge-purple/5 rounded-full blur-3xl"></div>
                   <div className="absolute -left-10 -top-10 opacity-5 pointer-events-none text-surge-purple">
                     <Mic size={200} />
                   </div>
                   
-                  <div className="relative z-10 text-center mb-8">
-                    <h2 className="text-4xl font-display font-bold text-surge-ink mb-3">
+                  <div className="relative z-10 text-center mb-6 md:mb-8">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-surge-ink mb-3">
                       {appLanguage === 'kk' ? 'Дауыстық диалог' : 'Голосовой диалог'}
                     </h2>
                     <p className="text-surge-ink/50 font-medium text-sm max-w-md mx-auto mb-6">
@@ -4434,7 +4445,7 @@ ${strictLang}`,
                     </p>
 
                     {/* Language selector toggle */}
-                    <div className="inline-flex items-center gap-1.5 p-1.5 bg-surge-ink/5 rounded-2xl border border-surge-ink/10">
+                    <div className="inline-flex flex-wrap justify-center items-center gap-1.5 p-1.5 bg-surge-ink/5 rounded-2xl border border-surge-ink/10">
                       <button
                         onClick={() => {
                           setVoiceLangMode('auto');
@@ -4480,7 +4491,7 @@ ${strictLang}`,
                     </div>
                   </div>
 
-                  <div className="w-48 h-48 rounded-full bg-surge-purple/10 flex items-center justify-center mb-8 relative z-10">
+                  <div className="w-36 h-36 sm:w-48 sm:h-48 rounded-full bg-surge-purple/10 flex items-center justify-center mb-6 sm:mb-8 relative z-10">
                     {isLiveActive && (
                       <>
                         <motion.div 
@@ -4496,7 +4507,7 @@ ${strictLang}`,
                       </>
                     )}
                     <div className={cn(
-                      "w-32 h-32 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 z-10",
+                      "w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 z-10",
                       isLiveActive 
                         ? (isAiSpeaking ? "bg-indigo-600 shadow-indigo-500/40 scale-110" : "bg-surge-purple shadow-surge-purple/40 scale-105") 
                         : "bg-surge-ink/10"
@@ -4530,7 +4541,7 @@ ${strictLang}`,
                     {isLiveActive ? (
                       <button 
                         onClick={stopLiveSession}
-                        className="px-14 py-4 bg-red-600 hover:bg-red-700 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl shadow-red-500/30 transition-all active:scale-95 flex items-center gap-3 cursor-pointer"
+                        className="px-8 sm:px-14 py-4 bg-red-600 hover:bg-red-700 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl shadow-red-500/30 transition-all active:scale-95 flex items-center gap-3 cursor-pointer"
                         title="Остановить голос и микрофон"
                       >
                         <Square size={20} fill="currentColor" />
@@ -4539,7 +4550,7 @@ ${strictLang}`,
                     ) : (
                       <button 
                         onClick={startLiveSession}
-                        className="px-14 py-4 bg-surge-purple hover:bg-surge-purple/90 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl shadow-surge-purple/30 transition-all active:scale-95 flex items-center gap-3 cursor-pointer"
+                        className="px-8 sm:px-14 py-4 bg-surge-purple hover:bg-surge-purple/90 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl shadow-surge-purple/30 transition-all active:scale-95 flex items-center gap-3 cursor-pointer"
                       >
                         <Play size={20} fill="currentColor" />
                         {appLanguage === 'kk' ? 'СӨЙЛЕСУДІ БАСТАУ' : 'НАЧАТЬ РАЗГОВОР'}
@@ -4560,25 +4571,25 @@ ${strictLang}`,
                   </div>
                 </div>
               ) : selectedDept === 'Experience' ? (
-                <div className="bg-surge-card rounded-[2.5rem] p-10 shadow-2xl mb-12 border-2 border-yellow-500/20 relative overflow-hidden text-left">
+                <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-2xl mb-12 border-2 border-yellow-500/20 relative overflow-hidden text-left">
                   <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none text-yellow-500">
                     <Trophy size={200} />
                   </div>
                   
                   <div className="relative z-10">
-                    <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
-                      <div className="w-24 h-24 rounded-[2rem] bg-yellow-500 flex items-center justify-center shadow-2xl shadow-yellow-500/40 flex-shrink-0 rotate-3">
-                        <Trophy className="text-white" size={48} />
+                    <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 mb-8 md:mb-12">
+                      <div className="w-20 h-20 md:w-24 md:h-24 rounded-[1.5rem] md:rounded-[2rem] bg-yellow-500 flex items-center justify-center shadow-2xl shadow-yellow-500/40 flex-shrink-0 rotate-3">
+                        <Trophy className="text-white" size={40} />
                       </div>
                       <div className="text-center md:text-left">
-                        <h3 className="text-4xl font-display font-black text-surge-ink mb-2 tracking-tight uppercase">LEVEL {user?.level || 1}</h3>
+                        <h3 className="text-2xl sm:text-3xl md:text-4xl font-display font-black text-surge-ink mb-2 tracking-tight uppercase">LEVEL {user?.level || 1}</h3>
                         <div className="flex items-center gap-3 justify-center md:justify-start">
                           <span className="text-yellow-500 font-black uppercase tracking-[0.2em] text-xs px-3 py-1 bg-yellow-500/10 rounded-full border border-yellow-500/20">Mastery Rank: {user?.rank || 'Novice Scholar'}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="space-y-5 mb-12">
+                    <div className="space-y-5 mb-8 md:mb-12">
                       <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em]">
                         <span className="text-surge-ink/30">Progress to Level {(user?.level || 1) + 1}</span>
                         <span className="text-yellow-500">{(user?.xp || 0) % 1000} / 1000 XP</span>
@@ -4592,18 +4603,18 @@ ${strictLang}`,
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-                      <div className="bg-surge-ink/5 rounded-3xl p-8 border border-surge-ink/5 text-center group hover:border-yellow-500/30 transition-all">
-                        <span className="block text-3xl font-display font-black text-surge-ink mb-2 group-hover:text-yellow-500 transition-colors">{user?.xp || 0}</span>
-                        <span className="text-[10px] text-surge-ink/30 uppercase font-black tracking-widest">Total XP</span>
+                    <div className="grid grid-cols-3 gap-2 sm:gap-6 mb-8 md:mb-12">
+                      <div className="bg-surge-ink/5 rounded-2xl sm:rounded-3xl p-3 sm:p-8 border border-surge-ink/5 text-center group hover:border-yellow-500/30 transition-all">
+                        <span className="block text-xl sm:text-3xl font-display font-black text-surge-ink mb-1 sm:mb-2 group-hover:text-yellow-500 transition-colors">{user?.xp || 0}</span>
+                        <span className="text-[9px] sm:text-[10px] text-surge-ink/30 uppercase font-black tracking-widest">Total XP</span>
                       </div>
-                      <div className="bg-surge-ink/5 rounded-3xl p-8 border border-surge-ink/5 text-center group hover:border-yellow-500/30 transition-all">
-                        <span className="block text-3xl font-display font-black text-surge-ink mb-2 group-hover:text-yellow-500 transition-colors">{user?.level || 1}</span>
-                        <span className="text-[10px] text-surge-ink/30 uppercase font-black tracking-widest">Current Level</span>
+                      <div className="bg-surge-ink/5 rounded-2xl sm:rounded-3xl p-3 sm:p-8 border border-surge-ink/5 text-center group hover:border-yellow-500/30 transition-all">
+                        <span className="block text-xl sm:text-3xl font-display font-black text-surge-ink mb-1 sm:mb-2 group-hover:text-yellow-500 transition-colors">{user?.level || 1}</span>
+                        <span className="text-[9px] sm:text-[10px] text-surge-ink/30 uppercase font-black tracking-widest">Current Level</span>
                       </div>
-                      <div className="bg-surge-ink/5 rounded-3xl p-8 border border-surge-ink/5 text-center group hover:border-yellow-500/30 transition-all">
-                        <span className="block text-3xl font-display font-black text-surge-ink mb-2 group-hover:text-yellow-500 transition-colors">{user?.badges?.length || 0}</span>
-                        <span className="text-[10px] text-surge-ink/30 uppercase font-black tracking-widest">Achievements</span>
+                      <div className="bg-surge-ink/5 rounded-2xl sm:rounded-3xl p-3 sm:p-8 border border-surge-ink/5 text-center group hover:border-yellow-500/30 transition-all">
+                        <span className="block text-xl sm:text-3xl font-display font-black text-surge-ink mb-1 sm:mb-2 group-hover:text-yellow-500 transition-colors">{user?.badges?.length || 0}</span>
+                        <span className="text-[9px] sm:text-[10px] text-surge-ink/30 uppercase font-black tracking-widest">Achievements</span>
                       </div>
                     </div>
 
@@ -4636,7 +4647,7 @@ ${strictLang}`,
                                   isDone ? "bg-yellow-500/10 border-yellow-500/30 opacity-75" : "bg-surge-ink/5 border-transparent hover:border-yellow-500/30"
                                 )}
                               >
-                                <div className="flex items-center gap-5">
+                                <div className="flex items-center gap-3.5 sm:gap-5">
                                   <div className={cn(
                                     "w-12 h-12 rounded-xl flex items-center justify-center transition-all",
                                     isDone ? "bg-yellow-500 text-white" : "bg-yellow-500/10 text-yellow-500 group-hover:bg-yellow-500 group-hover:text-white"
@@ -4662,7 +4673,7 @@ ${strictLang}`,
                           <div className="w-8 h-px bg-yellow-500/30"></div>
                           Unlocked Badges
                         </h4>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                           {Object.entries(ALL_ACHIEVEMENTS).map(([id, ach]) => {
                             const isUnlocked = achievements.includes(id);
                             return (
@@ -4688,19 +4699,19 @@ ${strictLang}`,
                   </div>
                 </div>
               ) : selectedDept === 'SmartVideos' ? (
-                <div className="bg-surge-card rounded-[2.5rem] p-8 md:p-12 shadow-2xl mb-12 border border-red-500/20 relative overflow-hidden text-surge-ink text-left">
+                <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-12 shadow-2xl mb-12 border border-red-500/20 relative overflow-hidden text-surge-ink text-left">
                   <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none text-red-500">
                     <Play size={240} />
                   </div>
                   
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 relative z-10 border-b border-surge-ink/10 pb-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 relative z-10 border-b border-surge-ink/10 pb-6">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
                         <span className="px-3 py-1 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg">
                           YouTube Integration
                         </span>
                       </div>
-                      <h3 className="text-3xl font-display font-black text-red-500 tracking-tight mb-2">
+                      <h3 className="text-2xl md:text-3xl font-display font-black text-red-500 tracking-tight mb-2">
                         Поиск видеоуроков на YouTube
                       </h3>
                       <p className="text-surge-ink/50 text-sm font-medium max-w-xl">
@@ -4748,7 +4759,7 @@ ${strictLang}`,
                         const searchQuery = `${smartVideosData.classLevel} ${smartVideosData.topic}`.trim() || 'Единое Национальное Тестирование ЕНТ ҰБТ';
                         window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`, '_blank');
                       }}
-                      className="w-full bg-red-600 hover:bg-red-700 text-white font-black text-lg uppercase tracking-wider py-6 px-8 rounded-2xl shadow-2xl shadow-red-500/30 transition-all active:scale-95 flex items-center justify-center gap-4 group cursor-pointer"
+                      className="w-full bg-red-600 hover:bg-red-700 text-white font-black text-base sm:text-lg uppercase tracking-wider py-4 sm:py-6 px-5 sm:px-8 rounded-2xl shadow-2xl shadow-red-500/30 transition-all active:scale-95 flex items-center justify-center gap-3 sm:gap-4 group cursor-pointer"
                     >
                       <Play size={28} className="fill-white group-hover:scale-110 transition-transform" />
                       <span>Найти видеоролики в платформе YouTube</span>
@@ -4756,12 +4767,12 @@ ${strictLang}`,
                   </div>
                 </div>
               ) : selectedDept === 'Projects' ? (
-                <div className="bg-surge-card rounded-[2.5rem] p-10 shadow-2xl mb-12 border-2 border-violet-500/20 relative overflow-hidden text-left">
+                <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-2xl mb-12 border-2 border-violet-500/20 relative overflow-hidden text-left">
                   <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none text-violet-500">
                     <Layers size={200} />
                   </div>
-                  <h3 className="text-3xl font-display font-black text-violet-500 mb-2 tracking-tight">{TRANSLATIONS[appLanguage].projectsHub || "Project Manager"}</h3>
-                  <p className="text-surge-ink/40 mb-10 text-sm font-medium">{TRANSLATIONS[appLanguage].projectsSubtitle || "Track your academic projects, assignments, and long-term goals."}</p>
+                  <h3 className="text-2xl md:text-3xl font-display font-black text-violet-500 mb-2 tracking-tight">{TRANSLATIONS[appLanguage].projectsHub || "Project Manager"}</h3>
+                  <p className="text-surge-ink/40 mb-6 md:mb-10 text-sm font-medium">{TRANSLATIONS[appLanguage].projectsSubtitle || "Track your academic projects, assignments, and long-term goals."}</p>
                   
                   <div className="flex flex-col md:flex-row gap-4 mb-10 relative z-10">
                       <div className="flex-1">
@@ -4818,7 +4829,7 @@ ${strictLang}`,
                       projects.map((project) => (
                         <div 
                           key={project.id}
-                          className="flex items-center justify-between p-6 bg-surge-ink/5 rounded-3xl border border-surge-ink/5 shadow-lg group hover:border-indigo-500/30 transition-all"
+                          className="flex items-center justify-between flex-wrap gap-3 p-4 sm:p-6 bg-surge-ink/5 rounded-3xl border border-surge-ink/5 shadow-lg group hover:border-indigo-500/30 transition-all"
                         >
                           <div className="flex items-center gap-4">
                             <button 
@@ -4846,7 +4857,7 @@ ${strictLang}`,
                           <div className="flex items-center gap-2">
                             <button 
                               onClick={() => handleSendMessage(undefined, `I'm working on my project: ${project.name}. Help me with the next steps!`)}
-                              className="p-3 bg-surge-ink/5 text-surge-ink/40 rounded-xl hover:bg-violet-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                              className="p-3 bg-surge-ink/5 text-surge-ink/40 rounded-xl hover:bg-violet-500 hover:text-white transition-all opacity-70 md:opacity-0 md:group-hover:opacity-100"
                               title="Ask AI for help"
                             >
                               <HelpCircle size={18} />
@@ -4855,7 +4866,7 @@ ${strictLang}`,
                               onClick={async () => {
                                 await deleteProject(project.id);
                               }}
-                              className="p-3 bg-surge-ink/5 text-surge-ink/40 rounded-xl hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                              className="p-3 bg-surge-ink/5 text-surge-ink/40 rounded-xl hover:bg-red-500 hover:text-white transition-all opacity-70 md:opacity-0 md:group-hover:opacity-100"
                               title="Delete project"
                             >
                               <Trash2 size={18} />
@@ -4867,7 +4878,7 @@ ${strictLang}`,
                   </div>
                 </div>
               ) : selectedDept === 'Timer' ? (
-                <div className="bg-surge-card rounded-[2.5rem] p-10 shadow-2xl mb-12 border-2 border-red-500/20 relative overflow-hidden flex flex-col items-center">
+                <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-2xl mb-12 border-2 border-red-500/20 relative overflow-hidden flex flex-col items-center">
                   <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none text-red-500">
                     <Clock size={200} />
                   </div>
@@ -4900,7 +4911,7 @@ ${strictLang}`,
                     </button>
                   </div>
 
-                  <div className="text-8xl font-display font-bold text-red-500 mb-10 tracking-tighter relative z-10">
+                  <div className="text-5xl sm:text-7xl md:text-8xl font-display font-bold text-red-500 mb-8 sm:mb-10 tracking-tighter relative z-10">
                     {formatTimerTime(timerTimeLeft)}
                   </div>
 
@@ -5044,14 +5055,14 @@ ${strictLang}`,
                 </div>
               ) : (
                 <>
-                  <p className="text-surge-ink/50 mb-12 text-lg max-w-lg mx-auto leading-relaxed font-medium">
+                  <p className="text-surge-ink/50 mb-8 md:mb-12 text-base md:text-lg max-w-lg mx-auto leading-relaxed font-medium">
                     {TRANSLATIONS[appLanguage].welcomeSubtitle}
                   </p>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <button 
                       onClick={() => createNewSession('chat', selectedDept)}
-                      className="group relative flex flex-col items-center gap-4 p-8 glass-panel rounded-3xl hover:border-surge-purple transition-all hover-glass-card"
+                      className="group relative flex flex-col items-center gap-4 p-5 sm:p-8 glass-panel rounded-3xl hover:border-surge-purple transition-all hover-glass-card"
                     >
                       <div className="w-14 h-14 rounded-2xl bg-surge-purple/10 flex items-center justify-center text-surge-purple group-hover:scale-110 group-hover:bg-surge-purple group-hover:text-white transition-all duration-300">
                         <MessageSquare size={28} />
@@ -5065,9 +5076,9 @@ ${strictLang}`,
                       onClick={() => {
                         createNewSession('conspect', selectedDept);
                       }}
-                      className="group relative flex flex-col items-center gap-4 p-8 glass-panel rounded-3xl hover:border-white transition-all hover-glass-card"
+                      className="group relative flex flex-col items-center gap-4 p-5 sm:p-8 glass-panel rounded-3xl hover:border-surge-ink transition-all hover-glass-card"
                     >
-                      <div className="w-14 h-14 rounded-2xl bg-surge-ink/10 flex items-center justify-center text-surge-ink group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-300">
+                      <div className="w-14 h-14 rounded-2xl bg-surge-ink/10 flex items-center justify-center text-surge-ink group-hover:scale-110 group-hover:bg-surge-ink group-hover:text-surge-bg transition-all duration-300">
                         <ImageIcon size={28} />
                       </div>
                       <div className="text-center">
@@ -5083,38 +5094,38 @@ ${strictLang}`,
         ) : (
           <>
             {/* Header */}
-            <header className="h-20 border-b border-surge-border bg-surge-bg/80 backdrop-blur-xl flex items-center justify-between px-8 sticky top-0 z-20">
-              <div className="flex items-center gap-4 min-w-0">
+            <header className="h-16 md:h-20 border-b border-surge-border bg-surge-bg/80 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 sticky top-0 z-20 gap-2">
+              <div className="flex items-center gap-2.5 md:gap-4 min-w-0">
                 <div className={cn(
-                  "p-3 rounded-2xl shadow-inner",
+                  "p-2.5 md:p-3 rounded-xl md:rounded-2xl shadow-inner shrink-0",
                   DEPARTMENTS.find(d => d.id === currentSession?.department)?.color || 'bg-surge-purple'
                 )}>
-                  {currentSession?.type === 'conspect' ? <FileText size={20} className="text-surge-ink" /> : <Aperture size={20} className="text-surge-ink" />}
+                  {currentSession?.type === 'conspect' ? <FileText size={18} className="text-white" /> : <Aperture size={18} className="text-white" />}
                 </div>
                 <div className="min-w-0">
-                  <h2 className="font-display font-bold text-surge-ink truncate text-lg">{currentSession?.title}</h2>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-surge-purple">
+                  <h2 className="font-display font-bold text-surge-ink truncate text-base md:text-lg">{currentSession?.title}</h2>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-surge-purple truncate">
                     {currentSession?.department} Department
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3 shrink-0">
                 <button 
                   onClick={() => archiveSession(currentSessionId)}
                   className={cn(
-                    "p-2.5 rounded-xl transition-all border",
+                    "p-2 md:p-2.5 rounded-xl transition-all border",
                     currentSession?.isArchived 
                       ? "bg-surge-purple/20 border-surge-purple text-surge-purple" 
                       : "bg-surge-card border-surge-border text-surge-ink/40 hover:text-surge-ink hover:border-surge-ink/20"
                   )}
                 >
-                  <Archive size={20} />
+                  <Archive size={18} />
                 </button>
                 <button 
                   onClick={() => deleteSession(currentSessionId)}
-                  className="p-2.5 bg-surge-card border border-surge-border text-surge-ink/40 hover:text-red-500 hover:border-red-500/30 rounded-xl transition-all"
+                  className="p-2 md:p-2.5 bg-surge-card border border-surge-border text-surge-ink/40 hover:text-red-500 hover:border-red-500/30 rounded-xl transition-all"
                 >
-                  <Trash2 size={20} />
+                  <Trash2 size={18} />
                 </button>
               </div>
             </header>
@@ -5122,7 +5133,7 @@ ${strictLang}`,
             {/* Messages */}
             <div 
               ref={scrollRef}
-              className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar"
+              className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-10 custom-scrollbar"
             >
               {currentSession?.type === 'flashcards' ? (
                 <div className="max-w-5xl mx-auto">
@@ -5176,22 +5187,22 @@ ${strictLang}`,
                       animate={{ y: 0, opacity: 1 }}
                       key={`${message.id || 'msg'}_${idx}`}
                       className={cn(
-                        "flex gap-6 max-w-5xl mx-auto",
+                        "flex gap-2.5 sm:gap-4 md:gap-6 max-w-5xl mx-auto",
                         message.role === 'user' ? "flex-row-reverse" : "flex-row"
                       )}
                     >
                       <div className={cn(
-                        "w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center font-bold text-sm shadow-lg",
-                        message.role === 'user' ? "bg-surge-purple/40 text-white" : "bg-surge-purple text-white"
+                        "w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex-shrink-0 flex items-center justify-center font-bold text-xs sm:text-sm shadow-lg",
+                        message.role === 'user' ? "bg-surge-purple/20 text-surge-purple border border-surge-purple/30" : "bg-surge-purple text-white"
                       )}>
                         {message.role === 'user' ? (user?.name?.slice(0, 2).toUpperCase() || 'U') : <Aperture size={18} />}
                       </div>
                       <div className={cn(
-                        "flex flex-col gap-2 max-w-[80%]",
+                        "flex flex-col gap-2 max-w-[85%] sm:max-w-[80%] min-w-0",
                         message.role === 'user' ? "items-end" : "items-start"
                       )}>
                         <div className={cn(
-                          "px-6 py-4 rounded-3xl text-[15px] leading-relaxed shadow-2xl",
+                          "px-4 py-3 md:px-6 md:py-4 rounded-2xl md:rounded-3xl text-sm md:text-[15px] leading-relaxed shadow-2xl max-w-full",
                           message.role === 'user' 
                             ? "bg-surge-purple text-white rounded-tr-none" 
                             : "bg-surge-card border border-surge-border text-surge-ink/90 rounded-tl-none"
@@ -5305,13 +5316,13 @@ ${strictLang}`,
             </div>
 
             {/* Input Area */}
-            <div className="p-8 bg-surge-bg border-t border-surge-border">
+            <div className="p-3 sm:p-4 md:p-8 bg-surge-bg border-t border-surge-border">
               <form 
                 onSubmit={handleSendMessage}
                 className="max-w-5xl mx-auto relative"
               >
                 {attachedImages.length > 0 && (
-                  <div className="absolute bottom-full left-0 mb-4 p-3 glass-panel rounded-2xl inline-flex gap-3 max-w-full overflow-x-auto shadow-2xl border border-surge-purple/20">
+                  <div className="absolute bottom-full left-0 mb-4 p-3 bg-surge-bg/95 backdrop-blur-xl solid-surface rounded-2xl inline-flex gap-3 max-w-full overflow-x-auto shadow-2xl border border-surge-purple/20 z-[80]">
                     {attachedImages.map((img, idx) => (
                       <div key={idx} className="relative flex-shrink-0 group">
                         <img 
@@ -5335,7 +5346,7 @@ ${strictLang}`,
                   </div>
                 )}
                 {uploadedFiles.length > 0 && (
-                  <div className="absolute bottom-full left-0 mb-4 p-3 glass-panel rounded-2xl flex flex-wrap gap-3 max-w-full shadow-2xl border border-emerald-500/20">
+                  <div className="absolute bottom-full left-0 mb-4 p-3 bg-surge-bg/95 backdrop-blur-xl solid-surface rounded-2xl flex flex-wrap gap-3 max-w-full shadow-2xl border border-emerald-500/20 z-[80]">
                     {uploadedFiles.map((file, idx) => (
                       <div key={idx} className="relative flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 px-4 py-2 rounded-xl group cursor-pointer hover:bg-emerald-500/20 transition-all" onClick={() => setPreviewFile(file)}>
                         <div className="p-2 bg-emerald-500/20 rounded-lg">
@@ -5364,7 +5375,7 @@ ${strictLang}`,
                         <span className="max-w-[150px] truncate">{link}</span>
                         <button 
                           onClick={() => setAttachedLinks(prev => prev.filter((_, i) => i !== idx))}
-                          className="hover:text-white transition-colors"
+                          className="hover:text-surge-ink transition-colors"
                         >
                           <X size={12} />
                         </button>
@@ -5372,15 +5383,15 @@ ${strictLang}`,
                     ))}
                   </div>
                 )}
-                <div className="flex items-end gap-3 bg-surge-card border border-surge-border rounded-[2rem] p-3 focus-within:ring-4 focus-within:ring-surge-purple/10 focus-within:border-surge-purple transition-all shadow-2xl">
-                  <div className="relative pl-2 pb-2 flex items-end">
+                <div className="flex items-end gap-1.5 sm:gap-3 bg-surge-card border border-surge-border rounded-[1.5rem] sm:rounded-[2rem] p-2 sm:p-3 focus-within:ring-4 focus-within:ring-surge-purple/10 focus-within:border-surge-purple transition-all shadow-2xl">
+                  <div className="relative pl-0.5 sm:pl-2 pb-0.5 sm:pb-2 flex items-end shrink-0">
                     <button
                       type="button"
                       onClick={() => setIsPlusMenuOpen(!isPlusMenuOpen)}
-                      className="p-3 bg-surge-bg hover:bg-surge-purple/10 rounded-full text-white/50 hover:text-surge-purple transition-all group"
+                      className="p-2 sm:p-3 bg-surge-bg hover:bg-surge-purple/10 rounded-full text-surge-ink/50 hover:text-surge-purple transition-all group"
                       title={TRANSLATIONS[appLanguage].addAttachmentTooltip}
                     >
-                      <Plus size={24} className={cn("transition-transform", isPlusMenuOpen && "rotate-45")} />
+                      <Plus size={22} className={cn("transition-transform", isPlusMenuOpen && "rotate-45")} />
                     </button>
 
                     <AnimatePresence>
@@ -5389,7 +5400,7 @@ ${strictLang}`,
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className="absolute bottom-full left-0 mb-4 w-72 bg-surge-card border border-surge-border rounded-3xl shadow-2xl overflow-hidden z-50 flex flex-col py-3"
+                          className="absolute bottom-full left-0 mb-4 w-72 max-w-[calc(100vw-2rem)] bg-surge-bg/95 backdrop-blur-xl solid-surface border border-surge-border rounded-3xl shadow-2xl overflow-hidden z-[90] flex flex-col py-3"
                         >
                           <button
                             type="button"
@@ -5452,8 +5463,8 @@ ${strictLang}`,
                     </AnimatePresence>
                   </div>
                   
-                  <div className="flex-1 flex flex-col">
-                    <div className="w-full flex items-center gap-2">
+                  <div className="flex-1 flex flex-col min-w-0">
+                    <div className="w-full flex items-center gap-1.5 sm:gap-2">
                       <button
                         type="button"
                         onClick={toggleVoiceTyping}
@@ -5465,7 +5476,7 @@ ${strictLang}`,
                         )}
                         title={TRANSLATIONS[appLanguage].voiceInputTooltip}
                       >
-                        <Mic size={20} />
+                        <Mic size={18} />
                       </button>
                       <textarea 
                         rows={1}
@@ -5482,7 +5493,7 @@ ${strictLang}`,
                                      currentSession?.department === 'Flashcards' ? TRANSLATIONS[appLanguage].enterFlashcardTopic :
                                      currentSession?.department === 'Quizzes' ? TRANSLATIONS[appLanguage].enterQuizTopic :
                                      TRANSLATIONS[appLanguage].messageSpyris}
-                        className="w-full bg-transparent border-none focus:ring-0 py-4 text-base resize-none max-h-60 text-surge-ink placeholder:text-surge-ink/20 font-medium"
+                        className="w-full min-w-0 bg-transparent border-none focus:ring-0 py-2.5 sm:py-4 text-sm sm:text-base resize-none max-h-60 text-surge-ink placeholder:text-surge-ink/20 font-medium"
                       />
                     </div>
                   </div>
@@ -5491,13 +5502,13 @@ ${strictLang}`,
                     type="submit"
                     disabled={(!input.trim() && attachedImages.length === 0 && uploadedFiles.length === 0) || isLoading}
                     className={cn(
-                      "p-4 rounded-2xl transition-all shadow-xl",
+                      "p-2.5 sm:p-4 rounded-xl sm:rounded-2xl transition-all shadow-xl shrink-0",
                       (input.trim() || attachedImages.length > 0 || uploadedFiles.length > 0) && !isLoading 
                         ? "bg-surge-purple text-white shadow-surge-purple/30 hover:scale-105 active:scale-95" 
                         : "bg-surge-border text-surge-ink/10 cursor-not-allowed"
                     )}
                   >
-                    <Send size={24} />
+                    <Send size={20} />
                   </button>
                 </div>
                 <div className="flex justify-center gap-6 mt-4">
@@ -5520,12 +5531,12 @@ ${strictLang}`,
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
           >
             <motion.div 
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              className="w-full max-w-md glass-panel rounded-[2.5rem] p-10 shadow-2xl relative"
+              className="w-full max-w-md mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto bg-surge-bg/95 backdrop-blur-xl solid-surface border border-surge-border rounded-[2rem] md:rounded-[2.5rem] p-6 sm:p-10 shadow-2xl relative"
             >
               <button 
                 onClick={() => {
@@ -5716,14 +5727,14 @@ ${strictLang}`,
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className="fixed bottom-24 right-6 z-[60] bg-surge-card border border-surge-purple/30 p-4 rounded-2xl shadow-2xl flex flex-col items-center gap-2 cursor-move min-w-[120px]"
+            className="fixed bottom-24 right-4 sm:right-6 z-[60] bg-surge-bg/95 backdrop-blur-xl solid-surface border border-surge-purple/30 p-4 rounded-2xl shadow-2xl flex flex-col items-center gap-2 cursor-move min-w-[120px]"
           >
             <button 
               onClick={(e) => {
                 e.stopPropagation();
                 setIsFloatingTimerVisible(false);
               }}
-              className="absolute -top-2 -right-2 w-6 h-6 bg-surge-ink text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-10"
+              className="absolute -top-2 -right-2 w-6 h-6 bg-surge-ink text-surge-bg rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-10"
             >
               <X size={14} />
             </button>
@@ -5744,13 +5755,13 @@ ${strictLang}`,
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-surge-ink/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[120] flex items-center justify-center p-4"
           >
             <motion.div 
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-surge-card border border-surge-border rounded-3xl p-8 max-w-md w-full shadow-2xl relative"
+              className="bg-surge-bg/95 backdrop-blur-xl solid-surface border border-surge-border rounded-3xl p-6 sm:p-8 max-w-md w-full mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto shadow-2xl relative"
             >
               <button 
                 onClick={() => setIsLinkModalOpen(false)}
@@ -5817,7 +5828,7 @@ ${strictLang}`,
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-12 bg-black/95 backdrop-blur-md"
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 pt-14 sm:p-6 md:p-12 bg-black/95 backdrop-blur-md"
             onClick={() => setPreviewFile(null)}
           >
             <motion.div 
@@ -5829,12 +5840,12 @@ ${strictLang}`,
             >
               <button 
                 onClick={() => setPreviewFile(null)}
-                className="absolute -top-12 right-0 p-3 text-white/50 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all"
+                className="absolute -top-11 right-0 p-2.5 sm:p-3 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition-all"
               >
-                <X size={24} />
+                <X size={22} />
               </button>
               
-              <div className="w-full bg-surge-card rounded-3xl overflow-hidden shadow-2xl border border-surge-border flex flex-col max-h-[85vh]">
+              <div className="w-full bg-surge-bg/95 solid-surface rounded-3xl overflow-hidden shadow-2xl border border-surge-border flex flex-col max-h-[82vh] sm:max-h-[85vh]">
                 <div className="p-4 border-b border-surge-border flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-surge-purple/10 rounded-lg text-surge-purple">

@@ -71,19 +71,19 @@ export function QuizViewer({ quiz, onComplete }: Props) {
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-surge-card border-2 border-surge-purple/20 rounded-[2.5rem] p-10 text-center shadow-2xl relative overflow-hidden"
+          className="bg-surge-card border-2 border-surge-purple/20 rounded-[2rem] md:rounded-[2.5rem] p-6 sm:p-10 text-center shadow-2xl relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-surge-purple to-transparent opacity-50" />
-          <div className="w-20 h-20 bg-surge-purple/10 rounded-2xl flex items-center justify-center text-surge-purple mx-auto mb-6">
-            <Trophy size={40} />
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-surge-purple/10 rounded-2xl flex items-center justify-center text-surge-purple mx-auto mb-6">
+            <Trophy size={36} />
           </div>
-          <h3 className="text-4xl font-display font-bold text-surge-ink mb-2">Quiz Complete!</h3>
-          <div className="flex items-center justify-center gap-4 my-8">
-            <div className="text-7xl font-black text-surge-purple">{score}</div>
-            <div className="text-3xl font-bold text-surge-ink/20">/</div>
-            <div className="text-5xl font-bold text-surge-ink/40">{quiz.length}</div>
+          <h3 className="text-2xl sm:text-4xl font-display font-bold text-surge-ink mb-2">Quiz Complete!</h3>
+          <div className="flex items-center justify-center gap-3 sm:gap-4 my-6 sm:my-8">
+            <div className="text-5xl sm:text-7xl font-black text-surge-purple">{score}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-surge-ink/20">/</div>
+            <div className="text-3xl sm:text-5xl font-bold text-surge-ink/40">{quiz.length}</div>
           </div>
-          <p className="text-xl text-surge-ink/60 font-medium mb-10">
+          <p className="text-base sm:text-xl text-surge-ink/60 font-medium mb-6 sm:mb-10">
             {score === quiz.length ? "Legendary! You mastered this topic." : 
              score >= quiz.length * 0.8 ? "Excellent work! Almost perfect." : 
              score >= quiz.length * 0.5 ? "Good job! You have a solid grasp." : 
@@ -92,7 +92,7 @@ export function QuizViewer({ quiz, onComplete }: Props) {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
               onClick={handleRestart}
-              className="flex items-center justify-center gap-3 px-10 py-5 bg-surge-purple text-white font-bold rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-xl shadow-surge-purple/20"
+              className="flex items-center justify-center gap-3 px-6 py-3.5 sm:px-10 sm:py-5 bg-surge-purple text-white font-bold rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-xl shadow-surge-purple/20"
             >
               <RotateCcw size={22} />
               Retake Quiz
@@ -172,13 +172,13 @@ export function QuizViewer({ quiz, onComplete }: Props) {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          className="bg-surge-card border-2 border-surge-purple/10 rounded-[2.5rem] p-10 shadow-2xl"
+          className="bg-surge-card border-2 border-surge-purple/10 rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-2xl"
         >
-          <h3 className="text-xl md:text-2xl font-bold text-surge-ink mb-10 leading-relaxed">
+          <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-surge-ink mb-6 md:mb-10 leading-relaxed">
             {currentQuestion.question}
           </h3>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4">
             {currentQuestion.options.map((option, oIdx) => {
               const isSelected = answers[currentIndex] === oIdx;
               return (
@@ -186,20 +186,20 @@ export function QuizViewer({ quiz, onComplete }: Props) {
                   key={oIdx}
                   onClick={() => handleSelect(oIdx)}
                   className={cn(
-                    "w-full text-left p-5 rounded-2xl border-2 transition-all font-medium relative group overflow-hidden",
+                    "w-full text-left p-3.5 sm:p-5 rounded-2xl border-2 transition-all font-medium relative group overflow-hidden",
                     isSelected 
                       ? "border-surge-purple bg-surge-purple/10 text-surge-ink shadow-lg shadow-surge-purple/10" 
                       : "border-surge-ink/5 bg-surge-ink/5 hover:border-surge-purple/30 hover:bg-surge-purple/5 text-surge-ink/60 hover:text-surge-ink"
                   )}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     <div className={cn(
-                      "w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold border transition-all",
+                      "w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold border transition-all shrink-0",
                       isSelected ? "bg-surge-purple border-surge-purple text-white" : "bg-surge-ink/10 border-surge-ink/10 text-surge-ink/40 group-hover:border-surge-purple/50 group-hover:text-surge-purple"
                     )}>
                       {String.fromCharCode(65 + oIdx)}
                     </div>
-                    <span className="text-base">{option}</span>
+                    <span className="text-sm sm:text-base">{option}</span>
                   </div>
                 </button>
               );
@@ -209,12 +209,12 @@ export function QuizViewer({ quiz, onComplete }: Props) {
       </AnimatePresence>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between mt-10">
+      <div className="flex items-center justify-between gap-2 mt-6 sm:mt-10">
         <button 
           onClick={handlePrev}
           disabled={currentIndex === 0}
           className={cn(
-            "flex items-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all",
+            "flex items-center gap-2 px-4 py-3 sm:px-6 sm:py-4 rounded-2xl text-sm sm:text-base font-bold transition-all",
             currentIndex === 0 
               ? "text-surge-ink/10 cursor-not-allowed" 
               : "text-surge-ink/40 hover:text-surge-purple hover:bg-surge-purple/5"
@@ -228,7 +228,7 @@ export function QuizViewer({ quiz, onComplete }: Props) {
           onClick={handleNext}
           disabled={!hasAnsweredCurrent}
           className={cn(
-            "flex items-center gap-2 px-10 py-4 rounded-2xl font-bold transition-all shadow-xl",
+            "flex items-center gap-2 px-5 py-3 sm:px-10 sm:py-4 rounded-2xl text-sm sm:text-base font-bold transition-all shadow-xl",
             hasAnsweredCurrent 
               ? "bg-surge-purple text-white shadow-surge-purple/20 hover:scale-105 active:scale-95" 
               : "bg-surge-ink/10 text-surge-ink/20 cursor-not-allowed"

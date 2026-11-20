@@ -757,7 +757,7 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
   // Render Setup Screen
   if (!isExamStarted) {
     return (
-      <div className="bg-surge-card rounded-[2.5rem] p-8 md:p-12 shadow-2xl border-2 border-rose-500/20 relative overflow-hidden text-left">
+      <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-12 shadow-2xl border-2 border-rose-500/20 relative overflow-hidden text-left">
         <div className="absolute -right-10 -bottom-10 opacity-5 pointer-events-none text-rose-500">
           <BookOpen size={240} />
         </div>
@@ -776,7 +776,7 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
                 120 заданий • 140 баллов • 240 минут
               </span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-display font-black text-surge-ink tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-display font-black text-surge-ink tracking-tight">
               Симулятор Единого Национального Тестирования
             </h2>
             <p className="text-surge-ink/60 text-sm mt-1 max-w-2xl font-medium">
@@ -897,7 +897,7 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-surge-ink/5 p-6 rounded-3xl border border-surge-ink/10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-surge-ink/5 p-4 sm:p-6 rounded-3xl border border-surge-ink/10">
                   <div>
                     <label className="block text-xs font-bold text-surge-ink/40 uppercase tracking-widest mb-2">
                       Первый профильный предмет (40 заданий, 50 баллов)
@@ -905,10 +905,10 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
                     <select 
                       value={customProfile1}
                       onChange={(e) => setCustomProfile1(e.target.value)}
-                      className="w-full bg-surge-card border border-surge-ink/20 rounded-xl p-3 text-sm font-bold text-surge-ink"
+                      className="w-full bg-surge-bg border border-surge-ink/20 rounded-xl p-3 text-sm font-bold text-surge-ink"
                     >
                       {PROFILE_SUBJECT_OPTIONS.map(s => (
-                        <option key={s} value={s}>{s}</option>
+                        <option key={s} value={s} className="bg-surge-bg text-surge-ink">{s}</option>
                       ))}
                     </select>
                   </div>
@@ -919,10 +919,10 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
                     <select 
                       value={customProfile2}
                       onChange={(e) => setCustomProfile2(e.target.value)}
-                      className="w-full bg-surge-card border border-surge-ink/20 rounded-xl p-3 text-sm font-bold text-surge-ink"
+                      className="w-full bg-surge-bg border border-surge-ink/20 rounded-xl p-3 text-sm font-bold text-surge-ink"
                     >
                       {PROFILE_SUBJECT_OPTIONS.map(s => (
-                        <option key={s} value={s}>{s}</option>
+                        <option key={s} value={s} className="bg-surge-bg text-surge-ink">{s}</option>
                       ))}
                     </select>
                   </div>
@@ -1009,16 +1009,16 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
     return (
       <div className="w-full max-w-5xl mx-auto space-y-8 my-4 text-left">
         {/* Result Summary Hero */}
-        <div className="bg-surge-card border-2 border-rose-500/20 rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
+        <div className="bg-surge-card border-2 border-rose-500/20 rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-12 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-8 pb-8 border-b border-surge-ink/10 relative z-10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 mb-8 pb-8 border-b border-surge-ink/10 relative z-10">
             <div>
               <div className={cn("inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold border mb-3", statusColor)}>
                 <Award size={16} />
                 <span>{statusText}</span>
               </div>
-              <h2 className="text-3xl md:text-5xl font-display font-black text-surge-ink tracking-tight mb-2">
+              <h2 className="text-2xl sm:text-3xl md:text-5xl font-display font-black text-surge-ink tracking-tight mb-2">
                 Результаты ЕНТ
               </h2>
               <p className="text-surge-ink/60 font-medium text-sm">
@@ -1026,18 +1026,18 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
               </p>
             </div>
 
-            <div className="flex items-center gap-6 bg-surge-ink/5 px-8 py-6 rounded-3xl border border-surge-ink/10">
+            <div className="flex items-center justify-center gap-4 sm:gap-6 bg-surge-ink/5 px-5 py-4 sm:px-8 sm:py-6 rounded-3xl border border-surge-ink/10 w-full md:w-auto">
               <div className="text-center">
                 <span className="text-xs font-bold text-surge-ink/40 uppercase tracking-widest block mb-1">Итоговый балл</span>
-                <div className="text-5xl md:text-6xl font-black text-rose-500">
+                <div className="text-4xl sm:text-5xl md:text-6xl font-black text-rose-500">
                   {totalScore}
-                  <span className="text-2xl text-surge-ink/30 font-bold ml-1">/ {maxScore}</span>
+                  <span className="text-xl sm:text-2xl text-surge-ink/30 font-bold ml-1">/ {maxScore}</span>
                 </div>
               </div>
-              <div className="w-px h-16 bg-surge-ink/10" />
+              <div className="w-px h-14 sm:h-16 bg-surge-ink/10" />
               <div className="text-center">
                 <span className="text-xs font-bold text-surge-ink/40 uppercase tracking-widest block mb-1">Процент</span>
-                <div className="text-4xl md:text-5xl font-black text-surge-ink">
+                <div className="text-3xl sm:text-4xl md:text-5xl font-black text-surge-ink">
                   {percent}%
                 </div>
               </div>
@@ -1093,7 +1093,7 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
         </div>
 
         {/* Detailed Question Review List */}
-        <div className="bg-surge-card rounded-[2.5rem] p-8 md:p-10 shadow-2xl border border-surge-ink/10">
+        <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-5 sm:p-8 md:p-10 shadow-2xl border border-surge-ink/10">
           <h3 className="text-2xl font-display font-black text-surge-ink mb-6 flex items-center gap-3">
             <CheckCircle2 size={24} className="text-emerald-500" />
             Разбор всех заданий и правильные ответы
@@ -1156,9 +1156,9 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
                           className={cn(
                             "p-3 rounded-xl border text-sm flex items-center justify-between",
                             isOptionCorrect 
-                              ? "bg-emerald-500/20 border-emerald-500 text-emerald-900 font-bold" 
+                              ? "bg-emerald-500/20 border-emerald-500 text-emerald-500 font-bold" 
                               : isOptionSelected 
-                                ? "bg-red-500/20 border-red-500 text-red-900 line-through" 
+                                ? "bg-red-500/20 border-red-500 text-red-500 line-through" 
                                 : "bg-surge-ink/5 border-transparent text-surge-ink/60"
                           )}
                         >
@@ -1191,26 +1191,26 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
   const answeredCount = Object.keys(userAnswers).length;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-surge-bg overflow-y-auto w-screen h-screen flex flex-col text-left pb-16">
+    <div className="fixed inset-0 z-[100] bg-surge-bg overflow-y-auto overflow-x-hidden w-full h-screen flex flex-col text-left pb-16">
       {/* Top Fixed App Bar for Test Center */}
-      <div className="sticky top-0 z-40 bg-surge-card/95 backdrop-blur-md border-b border-surge-ink/10 px-4 md:px-8 py-4 shadow-sm flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="sticky top-0 z-40 bg-surge-bg/95 backdrop-blur-md border-b border-surge-ink/10 px-3 sm:px-4 md:px-8 py-3 sm:py-4 shadow-sm flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           {onToggleSidebar && (
             <button 
               onClick={onToggleSidebar}
-              className="p-2.5 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold border border-rose-500/20 shadow-sm"
+              className="p-2 sm:p-2.5 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold border border-rose-500/20 shadow-sm shrink-0"
               title={isSidebarOpen ? "Закрыть отделы" : "Открыть отделы"}
             >
               {isSidebarOpen ? <ChevronsLeft size={16} /> : <ChevronsRight size={16} />}
-              <span>{isSidebarOpen ? "Закрыть отделы" : "Открыть отделы"}</span>
+              <span className="hidden sm:inline">{isSidebarOpen ? "Закрыть отделы" : "Открыть отделы"}</span>
             </button>
           )}
 
-          <div className="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center font-black">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center font-black shrink-0 text-xs sm:text-base">
             ҰБТ
           </div>
-          <div>
-            <h3 className="font-display font-black text-surge-ink text-sm md:text-base leading-tight">
+          <div className="min-w-0">
+            <h3 className="font-display font-black text-surge-ink text-xs sm:text-sm md:text-base leading-tight truncate">
               {examMode === 'full' ? 'Единое Национальное Тестирование' : `Срез: ${selectedSingleSubject}`}
             </h3>
             <span className="text-[11px] text-surge-ink/50 font-bold">
@@ -1221,14 +1221,14 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
 
         {/* Center Countdown Timer */}
         <div className={cn(
-          "flex items-center gap-2 px-5 py-2.5 rounded-2xl border font-mono font-black text-lg transition-all",
+          "flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-2xl border font-mono font-black text-sm sm:text-lg transition-all",
           secondsRemaining < 600 
             ? "bg-red-500/20 text-red-500 border-red-500 animate-pulse" 
             : secondsRemaining < 1800 
               ? "bg-amber-500/20 text-amber-500 border-amber-500" 
               : "bg-surge-ink/5 text-surge-ink border-surge-ink/10"
         )}>
-          <Clock size={18} />
+          <Clock size={16} />
           <span>{formatTime(secondsRemaining)}</span>
         </div>
 
@@ -1236,13 +1236,13 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
         <div className="flex items-center gap-2">
           <button 
             onClick={() => setShowFinishConfirm(true)}
-            className="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-rose-500/20"
+            className="px-3.5 py-2 sm:px-5 sm:py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-rose-500/20"
           >
             Завершить тест
           </button>
           <button 
             onClick={() => setShowExitConfirm(true)}
-            className="p-2.5 text-surge-ink/40 hover:text-red-500 hover:bg-surge-ink/5 rounded-xl transition-all"
+            className="p-2 sm:p-2.5 text-surge-ink/40 hover:text-red-500 hover:bg-surge-ink/5 rounded-xl transition-all"
             title="Отменить / выйти"
           >
             <XCircle size={20} />
@@ -1275,13 +1275,13 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
       </div>
 
       {/* Main Testing Workspace Grid */}
-      <div className="flex-1 w-full p-4 md:p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="flex-1 w-full p-4 md:p-8 grid grid-cols-1 lg:grid-cols-4 gap-5 md:gap-8">
         {/* Left 3 Columns: Active Question Card */}
         <div className="lg:col-span-3 space-y-6">
           {currentQ && (
-            <div className="bg-surge-card rounded-[2.5rem] p-6 md:p-10 shadow-2xl border border-surge-ink/10 relative overflow-hidden">
+            <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-4 sm:p-6 md:p-10 shadow-2xl border border-surge-ink/10 relative overflow-hidden">
               {/* Question Header & Meta */}
-              <div className="flex items-center justify-between pb-6 mb-6 border-b border-surge-ink/10">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-6 mb-6 border-b border-surge-ink/10">
                 <div className="flex items-center gap-3">
                   <span className="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center font-black text-lg">
                     {currentQ.number}
@@ -1361,11 +1361,11 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
               </div>
 
               {/* Navigation Toolbar */}
-              <div className="flex items-center justify-between pt-6 border-t border-surge-ink/10">
+              <div className="flex items-center justify-between gap-2 pt-6 border-t border-surge-ink/10">
                 <button 
                   onClick={() => setCurrentQIndex(prev => Math.max(0, prev - 1))}
                   disabled={currentQIndex === 0}
-                  className="px-6 py-3 bg-surge-ink/5 hover:bg-surge-ink/10 disabled:opacity-30 text-surge-ink font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-2"
+                  className="px-4 sm:px-6 py-3 bg-surge-ink/5 hover:bg-surge-ink/10 disabled:opacity-30 text-surge-ink font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-2"
                 >
                   <ChevronLeft size={16} />
                   <span>Назад</span>
@@ -1378,7 +1378,7 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
                 <button 
                   onClick={() => setCurrentQIndex(prev => Math.min(totalQuestions - 1, prev + 1))}
                   disabled={currentQIndex === totalQuestions - 1}
-                  className="px-6 py-3 bg-rose-500 hover:bg-rose-600 disabled:opacity-30 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 shadow-md shadow-rose-500/20"
+                  className="px-4 sm:px-6 py-3 bg-rose-500 hover:bg-rose-600 disabled:opacity-30 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 shadow-md shadow-rose-500/20"
                 >
                   <span>Вперед</span>
                   <ChevronRight size={16} />
@@ -1390,7 +1390,7 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
 
         {/* Right 1 Column: Question Matrix Navigation Panel */}
         <div className="space-y-6">
-          <div className="bg-surge-card rounded-[2.5rem] p-6 shadow-2xl border border-surge-ink/10">
+          <div className="bg-surge-card rounded-[2rem] md:rounded-[2.5rem] p-4 sm:p-6 shadow-2xl border border-surge-ink/10">
             <h4 className="font-display font-black text-surge-ink text-sm mb-4 flex items-center justify-between">
               <span>Карта заданий ({answeredCount}/{totalQuestions})</span>
               <span className="text-[10px] text-rose-500 font-bold uppercase tracking-widest">НЦТ МОН РК</span>
@@ -1440,7 +1440,7 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
                       isCurrent
                         ? "bg-rose-500 text-white border-rose-500 shadow-md ring-2 ring-rose-500/40"
                         : isAnswered
-                          ? "bg-emerald-500/20 text-emerald-800 border-emerald-500/40"
+                          ? "bg-emerald-500/20 text-emerald-500 border-emerald-500/40"
                           : "bg-surge-ink/5 text-surge-ink/60 border-surge-ink/10 hover:border-rose-500/30"
                     )}
                   >
@@ -1475,12 +1475,12 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
       {/* Confirmation Dialog: Finish Exam */}
       <AnimatePresence>
         {showFinishConfirm && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-surge-card rounded-3xl p-8 max-w-md w-full shadow-2xl border border-surge-ink/10 text-left"
+              className="bg-surge-bg/95 backdrop-blur-xl solid-surface rounded-3xl p-6 sm:p-8 max-w-md w-full mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto shadow-2xl border border-surge-ink/10 text-left"
             >
               <div className="w-12 h-12 rounded-2xl bg-rose-500/20 text-rose-500 flex items-center justify-center mb-4">
                 <AlertCircle size={28} />
@@ -1513,12 +1513,12 @@ export function EntExamSimulator({ user, appLanguage, isSidebarOpen, onToggleSid
       {/* Confirmation Dialog: Exit Exam */}
       <AnimatePresence>
         {showExitConfirm && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-surge-card rounded-3xl p-8 max-w-md w-full shadow-2xl border border-surge-ink/10 text-left"
+              className="bg-surge-bg/95 backdrop-blur-xl solid-surface rounded-3xl p-6 sm:p-8 max-w-md w-full mx-4 sm:mx-0 max-h-[90vh] overflow-y-auto shadow-2xl border border-surge-ink/10 text-left"
             >
               <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center mb-4">
                 <AlertTriangle size={28} />
